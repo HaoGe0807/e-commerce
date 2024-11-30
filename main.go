@@ -28,5 +28,5 @@ func main() {
 	kit.StartMainCenterGrpcService()
 	log.Info("Start main service done")
 	routine.LoopUntilExit()
-	log.Info("Exit. Bye!")
+	log.Info("Exit. Bye ! ")
 }

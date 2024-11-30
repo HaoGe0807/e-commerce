@@ -2,7 +2,7 @@ package repo
 
 import (
 	"context"
-	"ge-commerce/service/domain/product/entity"
+	"e-commerce/service/domain/product/entity"
 )
 
 type SpuRepo interface {
