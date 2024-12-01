@@ -8,7 +8,7 @@ import (
 	"e-commerce/service/kit/client"
 )
 
-const SERVICE_NAME = "retail"
+const SERVICE_NAME = "e-commerce"
 
 func init() {
 

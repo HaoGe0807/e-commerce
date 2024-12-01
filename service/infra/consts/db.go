@@ -1,7 +1,7 @@
 package consts
 
 const (
-	DB_RETAIL         = "retail"
-	REDIS_RETAIL      = "retail"
-	RETAIL_STOCK_LOCK = "retail_stock_lock"
+	DB_NAME          = "e-commerce"
+	REDIS_NAME       = "e-commerce"
+	REDIS_STOCK_LOCK = "e-commerce_stock_lock"
 )

@@ -10,7 +10,7 @@ import (
 
 func Init() {
 	// init db connections
-	initDBConnection(consts.DB_RETAIL)
+	initDBConnection(consts.DB_NAME)
 
 	//initRedisConnection()
 }
@@ -46,15 +46,15 @@ func initRedisConnection() {
 	dbnum := 6
 
 	log.Infof("Initialize cache, host: %s, port: %s, password: %s, dbnum: %d ", host, port, password, dbnum)
-	redis.NewClient(consts.RETAIL_STOCK_LOCK, host, port, password, dbnum)
+	redis.NewClient(consts.REDIS_STOCK_LOCK, host, port, password, dbnum)
 }
 
 // defer close connection
 func Close() {
-	orm.GetORM(consts.DB_RETAIL).Close()
+	orm.GetORM(consts.DB_NAME).Close()
 
-	redis.GetClient(consts.REDIS_RETAIL).Close()
-	redis.GetClient(consts.RETAIL_STOCK_LOCK).Close()
+	redis.GetClient(consts.REDIS_NAME).Close()
+	redis.GetClient(consts.REDIS_STOCK_LOCK).Close()
 }
 
 func IsRecordNotFoundError(err error) bool {
