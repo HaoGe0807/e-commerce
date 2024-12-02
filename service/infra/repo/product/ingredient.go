@@ -21,7 +21,7 @@ type IngredientInfoRepoImpl struct {
 
 func NewIngredientRepo() repo.IngredientRepo {
 	return &IngredientInfoRepoImpl{
-		db:        orm.GetORM(consts.DB_RETAIL),
+		db:        orm.GetORM(consts.DB_NAME),
 		tableName: CustomizationTableName,
 	}
 }

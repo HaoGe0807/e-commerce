@@ -21,7 +21,7 @@ type CustomizationInfoRepoImpl struct {
 
 func NewCustomizationRepo() repo.CustomizationRepo {
 	return &CustomizationInfoRepoImpl{
-		db:        orm.GetORM(consts.DB_RETAIL),
+		db:        orm.GetORM(consts.DB_NAME),
 		tableName: CustomizationTableName,
 	}
 }

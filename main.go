@@ -8,7 +8,7 @@ import (
 	"e-commerce/service/kit/client"
 )
 
-const SERVICE_NAME = "retail"
+const SERVICE_NAME = "e-commerce"
 
 func init() {
 
@@ -28,5 +28,5 @@ func main() {
 	kit.StartMainCenterGrpcService()
 	log.Info("Start main service done")
 	routine.LoopUntilExit()
-	log.Info("Exit. Thanks Bye!")
+	log.Info("Exit. Bye!")
 }

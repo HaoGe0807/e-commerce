@@ -4,16 +4,16 @@ import (
 	"e-commerce/service/app/product"
 )
 
-type IRetailService interface {
+type ECommerceService interface {
 	product.PdService
 }
 
-type RetailService struct {
+type CommerceService struct {
 	product.PdService
 }
 
-func NewService() IRetailService {
-	svc := &RetailService{
+func NewService() ECommerceService {
+	svc := &CommerceService{
 		PdService: product.NewProductService(),
 	}
 	return svc

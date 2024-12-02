@@ -20,7 +20,7 @@ type CategoryInfoRepoImpl struct {
 
 func NewCategoryRepo() repo.CategoryRepo {
 	return &CategoryInfoRepoImpl{
-		db:        orm.GetORM(consts.DB_RETAIL),
+		db:        orm.GetORM(consts.DB_NAME),
 		tableName: CategoryTableName,
 	}
 }

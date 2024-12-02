@@ -15,7 +15,7 @@ type Set struct {
 	QueryProductListEP goEndpoint.Endpoint
 }
 
-func New(service app.IRetailService) Set {
+func New(service app.ECommerceService) Set {
 	createProductEP := NewCreateProductEP(service)
 	createProductEP = utils.LoggingMiddleware()(createProductEP)
 	createProductEP = utils.ParameterCheckMiddleware()(createProductEP)
@@ -44,7 +44,7 @@ func New(service app.IRetailService) Set {
 	}
 }
 
-func NewCreateProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewCreateProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(CreateProductReq)
 
@@ -57,7 +57,7 @@ func NewCreateProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewUpdateProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewUpdateProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(UpdateProductReq)
 
@@ -70,7 +70,7 @@ func NewUpdateProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewDeleteProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewDeleteProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(DeleteProductReq)
 
@@ -83,7 +83,7 @@ func NewDeleteProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewQueryProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewQueryProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(QueryProductReq)
 
@@ -96,7 +96,7 @@ func NewQueryProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewQueryProductListEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewQueryProductListEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(QueryProductListReq)
 

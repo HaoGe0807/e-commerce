@@ -20,7 +20,7 @@ type SpuInfoRepoImpl struct {
 
 func NewSpuRepo() repo.SpuRepo {
 	return &SpuInfoRepoImpl{
-		db:        orm.GetORM(consts.DB_RETAIL),
+		db:        orm.GetORM(consts.DB_NAME),
 		tableName: SpuTableName,
 	}
 }
