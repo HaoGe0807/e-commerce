@@ -8,8 +8,8 @@ import (
 type SkuRepo interface {
 	CreateSku(ctx context.Context, sku *entity.SkuEntity) error
 	UpdateSku(ctx context.Context, sku *entity.SkuEntity) error
-	DeleteSku(ctx context.Context, storeId, skuId string) error
-	DeleteSkuBySpuId(ctx context.Context, storeId, spuId string) error
-	GetSkuListByStoreId(ctx context.Context, storeId string) ([]*entity.SkuEntity, error)
-	GetSkuListByStoreIdAndSpuId(ctx context.Context, storeId, spuId string) ([]*entity.SkuEntity, error)
+	DeleteSku(ctx context.Context, skuId string) error
+	DeleteSkuBySpuId(ctx context.Context, spuId string) error
+	GetSkuListBySpuId(ctx context.Context, spuId string) ([]*entity.SkuEntity, error)
+	GetSkuList(ctx context.Context) ([]*entity.SkuEntity, error)
 }

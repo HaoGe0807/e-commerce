@@ -15,7 +15,7 @@ type Set struct {
 	QueryProductListEP goEndpoint.Endpoint
 }
 
-func New(service app.IRetailService) Set {
+func New(service app.ECommerceService) Set {
 	createProductEP := NewCreateProductEP(service)
 	createProductEP = utils.LoggingMiddleware()(createProductEP)
 	createProductEP = utils.ParameterCheckMiddleware()(createProductEP)
@@ -44,11 +44,11 @@ func New(service app.IRetailService) Set {
 	}
 }
 
-func NewCreateProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewCreateProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(CreateProductReq)
 
-		err = service.CreateProduct(ctx, req.ProductName, req.CategoryId, req.Skus, req.Unit, req.MnemonicCode, req.Status, req.StoreId, req.CustomizationList, req.IngredientList, req.Icon, req.PriceMethod, req.Shape, req.ShapeColor, req.FirstDisplay, req.ProductSpecifications, req.ProductType)
+		err = service.CreateProduct(ctx, req.ProductName, req.CategoryId, req.Skus, req.Status, req.Icon)
 		if err != nil {
 			return nil, err
 		}
@@ -57,11 +57,11 @@ func NewCreateProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewUpdateProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewUpdateProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(UpdateProductReq)
 
-		err = service.UpdateProduct(ctx, req.SpuId, req.ProductName, req.CategoryId, req.Skus, req.Unit, req.MnemonicCode, req.Status, req.StoreId, req.CustomizationList, req.IngredientList, req.Icon, req.PriceMethod, req.Shape, req.ShapeColor, req.FirstDisplay, req.ProductSpecifications, req.ProductType)
+		err = service.UpdateProduct(ctx, req.SpuId, req.ProductName, req.CategoryId, req.Skus, req.Status, req.Icon)
 		if err != nil {
 			return nil, err
 		}
@@ -70,11 +70,11 @@ func NewUpdateProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewDeleteProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewDeleteProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(DeleteProductReq)
 
-		err = service.DeleteProduct(ctx, req.StoreId, req.SpuId)
+		err = service.DeleteProduct(ctx, req.SpuId)
 		if err != nil {
 			return nil, err
 		}
@@ -83,11 +83,11 @@ func NewDeleteProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewQueryProductEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewQueryProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(QueryProductReq)
 
-		product, err := service.QueryProduct(ctx, req.StoreId, req.SpuId)
+		product, err := service.QueryProduct(ctx, req.SpuId)
 		if err != nil {
 			return nil, err
 		}
@@ -96,11 +96,9 @@ func NewQueryProductEP(service app.IRetailService) goEndpoint.Endpoint {
 	}
 }
 
-func NewQueryProductListEP(service app.IRetailService) goEndpoint.Endpoint {
+func NewQueryProductListEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		req := request.(QueryProductListReq)
-
-		productList, err := service.QueryProductList(ctx, req.StoreId)
+		productList, err := service.QueryProductList(ctx)
 		if err != nil {
 			return nil, err
 		}

@@ -58,7 +58,7 @@ func MakeHTTPHandler(svcEndpoint endpoint.Set, options []httptransport.ServerOpt
 	})
 
 	// product
-	productRouter := r.PathPrefix("/api/retail/product").Subrouter()
+	productRouter := r.PathPrefix("/api/e-commerce/product").Subrouter()
 	{
 		//productRouter.Use(formDataToJsonMiddleware)
 		productRouter.Methods("POST").Path("/createProduct").Handler(kitHttp.CreateProductServer(svcEndpoint.CreateProductEP, options...))

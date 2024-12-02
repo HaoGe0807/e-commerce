@@ -20,20 +20,18 @@ type CategoryInfoRepoImpl struct {
 
 func NewCategoryRepo() repo.CategoryRepo {
 	return &CategoryInfoRepoImpl{
-		db:        orm.GetORM(consts.DB_RETAIL),
+		db:        orm.GetORM(consts.DB_NAME),
 		tableName: CategoryTableName,
 	}
 }
 
 type categoryModel struct {
-	StoreId      string `gorm:"column:store_id"`
 	CategoryId   string `gorm:"column:category_id"`
 	CategoryName string `gorm:"column:category_name"`
 	Deleted      bool   `gorm:"column:deleted"`
 }
 
 func (model categoryModel) convertEntityToModel(skuEntity *entity.CategoryEntity) {
-	model.StoreId = skuEntity.StoreId
 	model.CategoryId = skuEntity.CategoryId
 	model.CategoryName = skuEntity.CategoryName
 	model.Deleted = skuEntity.Deleted
@@ -42,7 +40,6 @@ func (model categoryModel) convertEntityToModel(skuEntity *entity.CategoryEntity
 // model转entity
 func (model categoryModel) convertModelToEntity() *entity.CategoryEntity {
 	return &entity.CategoryEntity{
-		StoreId:      model.StoreId,
 		CategoryId:   model.CategoryId,
 		CategoryName: model.CategoryName,
 		Deleted:      model.Deleted,

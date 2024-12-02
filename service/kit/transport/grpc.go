@@ -10,7 +10,7 @@ type grpcServer struct {
 	endpoints endpoint.Set
 }
 
-func NewGrpcServer(endpoints endpoint.Set) pb.RetailServiceServer {
+func NewGrpcServer(endpoints endpoint.Set) pb.ECommerceServiceServer {
 	return &grpcServer{
 		endpoints: endpoints,
 	}

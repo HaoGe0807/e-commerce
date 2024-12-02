@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option go_package = "/";
 package pb;
-service retailService{
+service eCommerceService{
   rpc CreateProduct(CreateProductReq) returns (Response) {}
   rpc UpdateProduct(UpdateProductReq) returns (Response) {}
 }

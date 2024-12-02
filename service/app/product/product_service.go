@@ -19,16 +19,16 @@ func NewProductService() PdService {
 }
 
 type PdService interface {
-	CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, unit string, mnemonicCode string, status string, storeId string, customizationList []entity.CustomizationEntity, ingredientList []entity.IngredientEntity, icon string, priceMethod string, shape string, shapeColor string, firstDisplay string, productSpecifications string, productType string) error
-	UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, unit string, mnemonicCode string, status string, storeId string, customizationList []entity.CustomizationEntity, ingredientList []entity.IngredientEntity, icon string, priceMethod string, shape string, shapeColor string, firstDisplay string, productSpecifications string, productType string) error
-	DeleteProduct(ctx context.Context, storeId, spuId string) error
-	QueryProduct(ctx context.Context, storeId, spuId string) (productVO.ProductVO, error)
-	QueryProductList(ctx context.Context, storeId string) ([]productVO.ProductVO, error)
+	CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) error
+	UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) error
+	DeleteProduct(ctx context.Context, spuId string) error
+	QueryProduct(ctx context.Context, spuId string) (productVO.ProductVO, error)
+	QueryProductList(ctx context.Context) ([]productVO.ProductVO, error)
 }
 
-func (p ProductService) CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, unit string, mnemonicCode string, status string, storeId string, customizationList []entity.CustomizationEntity, ingredientList []entity.IngredientEntity, icon string, priceMethod string, shape string, shapeColor string, firstDisplay string, productSpecifications string, productType string) error {
+func (p ProductService) CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) error {
 	// create product
-	_, err := p.impl.CreateProduct(ctx, storeId, productName, categoryId, skus, unit, mnemonicCode, status, icon, priceMethod, shape, shapeColor, firstDisplay, productSpecifications, productType)
+	_, err := p.impl.CreateProduct(ctx, productName, categoryId, skus, status, icon)
 	if err != nil {
 		return err
 	}
@@ -38,9 +38,9 @@ func (p ProductService) CreateProduct(ctx context.Context, productName string, c
 	return nil
 }
 
-func (p ProductService) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, unit string, mnemonicCode string, status string, storeId string, customizationList []entity.CustomizationEntity, ingredientList []entity.IngredientEntity, icon string, priceMethod string, shape string, shapeColor string, firstDisplay string, productSpecifications string, productType string) error {
+func (p ProductService) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) error {
 	// update product
-	err := p.impl.UpdateProduct(ctx, spuId, productName, categoryId, skus, unit, mnemonicCode, status, storeId, customizationList, ingredientList, icon, priceMethod, shape, shapeColor, firstDisplay, productSpecifications, productType)
+	err := p.impl.UpdateProduct(ctx, spuId, productName, categoryId, skus, status, icon)
 	if err != nil {
 		return err
 	}
@@ -48,17 +48,17 @@ func (p ProductService) UpdateProduct(ctx context.Context, spuId string, product
 	return nil
 }
 
-func (p ProductService) DeleteProduct(ctx context.Context, storeId, spuId string) error {
-	err := p.impl.DeleteProduct(ctx, storeId, spuId)
+func (p ProductService) DeleteProduct(ctx context.Context, spuId string) error {
+	err := p.impl.DeleteProduct(ctx, spuId)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (p ProductService) QueryProduct(ctx context.Context, storeId, spuId string) (productVO.ProductVO, error) {
+func (p ProductService) QueryProduct(ctx context.Context, spuId string) (productVO.ProductVO, error) {
 
-	productInfo, err := p.impl.QueryProduct(ctx, storeId, spuId)
+	productInfo, err := p.impl.QueryProduct(ctx, spuId)
 	if err != nil {
 		return productVO.ProductVO{}, err
 	}
@@ -69,8 +69,8 @@ func (p ProductService) QueryProduct(ctx context.Context, storeId, spuId string)
 	return productVO.ProductBOToVO(productInfo, inv), nil
 }
 
-func (p ProductService) QueryProductList(ctx context.Context, storeId string) ([]productVO.ProductVO, error) {
-	productList, err := p.impl.QueryProductList(ctx, storeId)
+func (p ProductService) QueryProductList(ctx context.Context) ([]productVO.ProductVO, error) {
+	productList, err := p.impl.QueryProductList(ctx)
 	if err != nil {
 		return nil, err
 	}

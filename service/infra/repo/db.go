@@ -25,7 +25,7 @@ func initDBConnection(name string) {
 	maxIdleConns := 1
 
 	// TODO 入参 与 此处hardcode 逻辑待优化
-	dbName := "retail"
+	dbName := consts.DB_NAME
 
 	options := []orm.Option{
 		orm.WithDBname(dbName),
