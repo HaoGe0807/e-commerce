@@ -26,24 +26,12 @@ func NewSpuRepo() repo.SpuRepo {
 }
 
 type spuModel struct {
-	SpuId                 string `gorm:"column:spu_id"`
-	CategoryId            string `gorm:"column:category_id"`
-	StoreId               string `gorm:"column:store_id"`
-	ProductName           string `gorm:"column:product_name"`
-	Unit                  string `gorm:"column:unit"`
-	Status                string `gorm:"column:status"`
-	MnemonicCode          string `gorm:"column:mnemonic_code"`
-	ProductSpecifications string `gorm:"column:product_specifications"`
-	Icon                  string `gorm:"column:icon"`
-	Deleted               bool   `gorm:"column:deleted"`
-	PriceMethod           string `gorm:"column:price_method"`
-	Sort                  int    `gorm:"column:sort"`
-	SortFiled             string `gorm:"column:sort_filed"`
-	Shape                 string `gorm:"column:shape"`
-	ShapeColor            string `gorm:"column:shape_color"`
-	FistDisplay           string `gorm:"column:first_display"`
-	ProductType           string `gorm:"column:product_type"`
-	Version               string `gorm:"column:version"`
+	SpuId       string `gorm:"column:spu_id"`
+	CategoryId  string `gorm:"column:category_id"`
+	ProductName string `gorm:"column:product_name"`
+	Status      string `gorm:"column:status"`
+	Icon        string `gorm:"column:icon"`
+	Deleted     bool   `gorm:"column:deleted"`
 }
 
 func (model spuModel) convertEntityToModel(spuEntity *entity.SpuEntity) {

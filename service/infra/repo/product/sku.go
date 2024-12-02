@@ -27,16 +27,14 @@ func NewSkuRepo() repo.SkuRepo {
 }
 
 type skuModel struct {
-	SpuId        string     `gorm:"column:spu_id"`
-	StoreId      string     `gorm:"column:store_id"`
-	SkuId        string     `gorm:"column:sku_id"`
-	SkuName      string     `gorm:"column:sku_name"`
-	SellAmount   ebus.Money `gorm:"column:sell_amount"`
-	CostAmount   ebus.Money `gorm:"column:cost_amount"`
-	Deleted      bool       `gorm:"column:deleted"`
-	IsDefault    bool       `gorm:"column:is_default"`
-	Code         string     `gorm:"column:code"`
-	MinimumStock int64      `gorm:"column:minimum_stock"`
+	SpuId      string     `gorm:"column:spu_id"`
+	SkuId      string     `gorm:"column:sku_id"`
+	SkuName    string     `gorm:"column:sku_name"`
+	SellAmount ebus.Money `gorm:"column:sell_amount"`
+	CostAmount ebus.Money `gorm:"column:cost_amount"`
+	Deleted    bool       `gorm:"column:deleted"`
+	IsDefault  bool       `gorm:"column:is_default"`
+	Code       string     `gorm:"column:code"`
 }
 
 func (model skuModel) convertEntityToModel(skuEntity *entity.SkuEntity) {
