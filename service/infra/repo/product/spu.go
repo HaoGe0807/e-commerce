@@ -49,36 +49,20 @@ type spuModel struct {
 func (model spuModel) convertEntityToModel(spuEntity *entity.SpuEntity) {
 	model.SpuId = spuEntity.SpuId
 	model.CategoryId = spuEntity.CategoryId
-	model.StoreId = spuEntity.StoreId
 	model.ProductName = spuEntity.ProductName
-	model.Unit = spuEntity.Unit
 	model.Status = spuEntity.Status
-	model.MnemonicCode = spuEntity.MnemonicCode
-	model.ProductSpecifications = spuEntity.ProductSpecifications
 	model.Icon = spuEntity.Icon
 	model.Deleted = spuEntity.Deleted
-	model.PriceMethod = spuEntity.PriceMethod
-	model.Sort = spuEntity.Sort
-	model.SortFiled = spuEntity.SortFiled
-	model.Shape = spuEntity.Shape
 }
 
 func (model spuModel) convertModelToEntity() *entity.SpuEntity {
 	return &entity.SpuEntity{
-		SpuId:                 model.SpuId,
-		CategoryId:            model.CategoryId,
-		StoreId:               model.StoreId,
-		ProductName:           model.ProductName,
-		Unit:                  model.Unit,
-		Status:                model.Status,
-		MnemonicCode:          model.MnemonicCode,
-		ProductSpecifications: model.ProductSpecifications,
-		Icon:                  model.Icon,
-		Deleted:               model.Deleted,
-		PriceMethod:           model.PriceMethod,
-		Sort:                  model.Sort,
-		SortFiled:             model.SortFiled,
-		Shape:                 model.Shape,
+		SpuId:       model.SpuId,
+		CategoryId:  model.CategoryId,
+		ProductName: model.ProductName,
+		Status:      model.Status,
+		Icon:        model.Icon,
+		Deleted:     model.Deleted,
 	}
 }
 
@@ -97,23 +81,23 @@ func (s SpuInfoRepoImpl) UpdateSpu(ctx context.Context, spu *entity.SpuEntity) e
 }
 
 // DeleteSpu 删除
-func (s SpuInfoRepoImpl) DeleteSpu(ctx context.Context, storeId, spuId string) error {
-	return s.db.Table(s.tableName).Where("spu_id = ?", spuId).Update("deleted", true).Error
+func (s SpuInfoRepoImpl) DeleteSpu(ctx context.Context, spuId string) error {
+	return s.db.Table(s.tableName).Where("spu_id = ?", spuId).Update("deleted", false).Error
 }
 
 // GetSpu 获取
-func (s SpuInfoRepoImpl) GetSpu(ctx context.Context, storeId, spuId string) (*entity.SpuEntity, error) {
+func (s SpuInfoRepoImpl) GetSpu(ctx context.Context, spuId string) (*entity.SpuEntity, error) {
 	model := spuModel{}
 	s.db.Table(s.tableName).Where("spu_id = ?", spuId).First(&model)
 	return model.convertModelToEntity(), nil
 }
 
 // GetSpuList 获取列表
-func (s SpuInfoRepoImpl) GetSpuListByStoreId(ctx context.Context, storeId string) ([]*entity.SpuEntity, error) {
+func (s SpuInfoRepoImpl) GetSpuList(ctx context.Context) ([]*entity.SpuEntity, error) {
 	modelList := make([]spuModel, 0)
 	entityList := make([]*entity.SpuEntity, 0)
 
-	s.db.Table(s.tableName).Where("store_id = ?", storeId).Find(&modelList)
+	s.db.Table(s.tableName).Where("deleted", false).Find(&modelList)
 	for _, model := range modelList {
 		entityList = append(entityList, model.convertModelToEntity())
 	}
@@ -121,7 +105,7 @@ func (s SpuInfoRepoImpl) GetSpuListByStoreId(ctx context.Context, storeId string
 }
 
 // GetSpuListByCategoryId 获取列表
-func (s SpuInfoRepoImpl) GetSpuListByCategoryId(ctx context.Context, storeId, categoryId string) ([]*entity.SpuEntity, error) {
+func (s SpuInfoRepoImpl) GetSpuListByCategoryId(ctx context.Context, categoryId string) ([]*entity.SpuEntity, error) {
 	modelList := make([]spuModel, 0)
 	entityList := make([]*entity.SpuEntity, 0)
 

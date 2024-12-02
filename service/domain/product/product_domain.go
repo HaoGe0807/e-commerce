@@ -4,7 +4,6 @@ import (
 	"context"
 	"e-commerce/service/domain/product/entity"
 	"e-commerce/service/domain/product/repo"
-	"e-commerce/service/infra/consts"
 	"e-commerce/service/infra/ebus"
 	"e-commerce/service/infra/log"
 	"e-commerce/service/infra/repo/product"
@@ -19,23 +18,19 @@ var once sync.Once
 var impl = &ProductDomainImpl{}
 
 type ProductDomainImpl struct {
-	SpuRepo           repo.SpuRepo
-	SkuRepo           repo.SkuRepo
-	CategoryRepo      repo.CategoryRepo
-	CustomizationRepo repo.CustomizationRepo
-	IngredientRepo    repo.IngredientRepo
+	SpuRepo      repo.SpuRepo
+	SkuRepo      repo.SkuRepo
+	CategoryRepo repo.CategoryRepo
 }
 
 func NewProductDomainImpl() *ProductDomainImpl {
 	impl.SpuRepo = product.NewSpuRepo()
 	impl.SkuRepo = product.NewSkuRepo()
 	impl.CategoryRepo = product.NewCategoryRepo()
-	impl.CustomizationRepo = product.NewCustomizationRepo()
-	impl.IngredientRepo = product.NewIngredientRepo()
 	return impl
 }
 
-func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, storeId string, productName string, categoryId string, skus []entity.SkuEntity, unit string, mnemonicCode string, status string, icon string, priceMethod string, shape string, shapeColor string, firstDisplay string, productSpecifications string, productType string) (string, error) {
+func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (string, error) {
 
 	// check category
 	_, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
@@ -46,7 +41,7 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, storeId string
 	spuBO := &entity.SpuEntity{}
 
 	// spu contract
-	spuBO, err = impl.spuContract(ctx, spuBO, storeId, productName, unit, categoryId, mnemonicCode, status, icon, priceMethod, productSpecifications, shape, shapeColor, firstDisplay, productType)
+	spuBO, err = impl.spuContract(ctx, spuBO, productName, categoryId, status, icon)
 	if err != nil {
 		return "", err
 	}
@@ -55,11 +50,6 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, storeId string
 	err = impl.SpuRepo.CreateSpu(ctx, spuBO)
 	if err != nil {
 		return "", err
-	}
-
-	// create sku
-	if productSpecifications == consts.SINGLE && len(skus) != 1 {
-		return "", errors.New("single product must have one sku")
 	}
 
 	// skuname list
@@ -86,7 +76,7 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, storeId string
 	}
 
 	for _, sku := range skus {
-		skuBO, err := impl.skuContract(ctx, &sku, storeId, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code, sku.MinimumStock)
+		skuBO, err := impl.skuContract(ctx, &sku, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code)
 		if err != nil {
 			return "", err
 		}
@@ -99,7 +89,7 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, storeId string
 
 	return spuBO.SpuId, nil
 }
-func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, unit string, mnemonicCode string, status string, storeId string, customizationList []entity.CustomizationEntity, ingredientList []entity.IngredientEntity, icon string, priceMethod string, shape string, shapeColor string, firstDisplay string, productSpecifications string, productType string) error {
+func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) error {
 	// check category
 	_, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
 	if err != nil {
@@ -107,10 +97,10 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	}
 
 	// get spu
-	spuBO, err := impl.SpuRepo.GetSpu(ctx, storeId, spuId)
+	spuBO, err := impl.SpuRepo.GetSpu(ctx, spuId)
 
 	// spu contract
-	spuBO, err = impl.spuContract(ctx, spuBO, storeId, productName, unit, categoryId, mnemonicCode, status, icon, priceMethod, productSpecifications, shape, shapeColor, firstDisplay, productType)
+	spuBO, err = impl.spuContract(ctx, spuBO, productName, categoryId, status, icon)
 	if err != nil {
 		return err
 	}
@@ -145,7 +135,7 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	}
 
 	for _, sku := range skus {
-		skuBO, err := impl.skuContract(ctx, &sku, storeId, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code, sku.MinimumStock)
+		skuBO, err := impl.skuContract(ctx, &sku, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code)
 		if err != nil {
 			return err
 		}
@@ -158,16 +148,16 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 
 	return nil
 }
-func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, storeId, spuId string) error {
+func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) error {
 
 	// delete spu
-	err := impl.SpuRepo.DeleteSpu(ctx, storeId, spuId)
+	err := impl.SpuRepo.DeleteSpu(ctx, spuId)
 	if err != nil {
 		return err
 	}
 
 	// delete sku
-	err = impl.SkuRepo.DeleteSku(ctx, storeId, spuId)
+	err = impl.SkuRepo.DeleteSku(ctx, spuId)
 	if err != nil {
 		return err
 	}
@@ -176,14 +166,14 @@ func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, storeId, spuId
 
 	return nil
 }
-func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, storeId, spuId string) (entity.ProductAggInfo, error) {
+func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (entity.ProductAggInfo, error) {
 
-	spuBO, err := impl.SpuRepo.GetSpu(ctx, storeId, spuId)
+	spuBO, err := impl.SpuRepo.GetSpu(ctx, spuId)
 	if err != nil {
 		return entity.ProductAggInfo{}, err
 	}
 
-	skuBOs, err := impl.SkuRepo.GetSkuListByStoreIdAndSpuId(ctx, storeId, spuId)
+	skuBOs, err := impl.SkuRepo.GetSkuListBySpuId(ctx, spuId)
 	if err != nil {
 		return entity.ProductAggInfo{}, err
 	}
@@ -196,35 +186,23 @@ func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, storeId, spuId 
 	}
 
 	return entity.ProductAggInfo{
-		SpuId:                 spuBO.SpuId,
-		CategoryId:            spuBO.CategoryId,
-		StoreId:               spuBO.StoreId,
-		ProductName:           spuBO.ProductName,
-		Unit:                  spuBO.Unit,
-		Status:                spuBO.Status,
-		MnemonicCode:          spuBO.MnemonicCode,
-		ProductSpecifications: spuBO.ProductSpecifications,
-		Icon:                  spuBO.Icon,
-		Deleted:               spuBO.Deleted,
-		PriceMethod:           spuBO.PriceMethod,
-		Sort:                  spuBO.Sort,
-		SortFiled:             spuBO.SortFiled,
-		Shape:                 spuBO.Shape,
-		ShapeColor:            spuBO.ShapeColor,
-		ProductType:           spuBO.ProductType,
-		Version:               spuBO.Version,
-		FirstDisplay:          spuBO.FirstDisplay,
-		Skus:                  skus,
+		SpuId:       spuBO.SpuId,
+		CategoryId:  spuBO.CategoryId,
+		ProductName: spuBO.ProductName,
+		Status:      spuBO.Status,
+		Icon:        spuBO.Icon,
+		Deleted:     spuBO.Deleted,
+		Skus:        skus,
 	}, nil
 }
-func (impl *ProductDomainImpl) QueryProductList(ctx context.Context, storeId string) ([]entity.ProductAggInfo, error) {
+func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]entity.ProductAggInfo, error) {
 
-	spuBOlist, err := impl.SpuRepo.GetSpuListByStoreId(ctx, storeId)
+	spuBOlist, err := impl.SpuRepo.GetSpuList(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	skuBOList, err := impl.SkuRepo.GetSkuListByStoreId(ctx, storeId)
+	skuBOList, err := impl.SkuRepo.GetSkuList(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -242,47 +220,28 @@ func (impl *ProductDomainImpl) QueryProductList(ctx context.Context, storeId str
 
 	for _, v := range spuBOlist {
 		productList = append(productList, entity.ProductAggInfo{
-			SpuId:                 v.SpuId,
-			CategoryId:            v.CategoryId,
-			StoreId:               v.StoreId,
-			ProductName:           v.ProductName,
-			Unit:                  v.Unit,
-			Status:                v.Status,
-			MnemonicCode:          v.MnemonicCode,
-			ProductSpecifications: v.ProductSpecifications,
-			Icon:                  v.Icon,
-			CustomizationList:     v.CustomizationList,
-			IngredientList:        v.IngredientList,
-			Deleted:               v.Deleted,
-			PriceMethod:           v.PriceMethod,
-			Sort:                  v.Sort,
-			SortFiled:             v.SortFiled,
-			Shape:                 v.Shape,
-			ShapeColor:            v.ShapeColor,
-			ProductType:           v.ProductType,
-			Version:               v.Version,
-			FirstDisplay:          v.FirstDisplay,
-			Skus:                  skuMap[v.SpuId],
+			SpuId:       v.SpuId,
+			CategoryId:  v.CategoryId,
+			ProductName: v.ProductName,
+			Status:      v.Status,
+			Icon:        v.Icon,
+			Deleted:     v.Deleted,
+			Skus:        skuMap[v.SpuId],
 		})
 	}
 
 	return productList, nil
 }
 
-func (impl *ProductDomainImpl) spuContract(ctx context.Context, spuBO *entity.SpuEntity, storeId string, productName string, unit string, categoryId string, mnemonicCode string, status string, icon string, priceMethod string, productSpecifications string, shape string, shapeColor string, firstDisplay string, productType string) (*entity.SpuEntity, error) {
-	if !utils.ContainsString(consts.ALLOWSHAPES, shape) {
-		log.Error("shape is not allowed")
-		return nil, errors.New("shape is not allowed")
-	}
-
-	return spuBO.FillField(ctx, storeId, productName, unit, categoryId, mnemonicCode, status, icon, priceMethod, productSpecifications, shape, shapeColor, firstDisplay, productType), nil
+func (impl *ProductDomainImpl) spuContract(ctx context.Context, spuBO *entity.SpuEntity, productName string, categoryId string, status string, icon string) (*entity.SpuEntity, error) {
+	return spuBO.FillField(ctx, productName, categoryId, status, icon), nil
 }
 
-func (impl *ProductDomainImpl) skuContract(ctx context.Context, skuBO *entity.SkuEntity, storeId string, spuId string, skuName string, sellAmount ebus.Money, costAmount ebus.Money, isDefault bool, code string, minimumStock int64) (*entity.SkuEntity, error) {
+func (impl *ProductDomainImpl) skuContract(ctx context.Context, skuBO *entity.SkuEntity, spuId string, skuName string, sellAmount ebus.Money, costAmount ebus.Money, isDefault bool, code string) (*entity.SkuEntity, error) {
 	re := regexp.MustCompile("^[a-zA-Z0-9]+$")
 	if !re.MatchString(code) {
 		log.Error("code is not allowed")
 	}
 
-	return skuBO.FillField(ctx, storeId, spuId, skuName, sellAmount, costAmount, isDefault, code, minimumStock), nil
+	return skuBO.FillField(ctx, spuId, skuName, sellAmount, costAmount, isDefault, code), nil
 }

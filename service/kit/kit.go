@@ -92,7 +92,7 @@ func runGrpcServer(svcEndpoint endpoint.Set) {
 		grpc.MaxRecvMsgSize(maxMsgSize),
 		grpc.MaxSendMsgSize(maxMsgSize))
 	reflection.Register(baseServer)
-	pb.RegisterRetailServiceServer(baseServer, grpcServer)
+	pb.RegisterECommerceServiceServer(baseServer, grpcServer)
 
 	healthSvc := health.NewServer()
 	healthpb.RegisterHealthServer(baseServer, healthSvc)

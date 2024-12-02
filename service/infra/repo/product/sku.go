@@ -41,7 +41,6 @@ type skuModel struct {
 
 func (model skuModel) convertEntityToModel(skuEntity *entity.SkuEntity) {
 	model.SpuId = skuEntity.SpuId
-	model.StoreId = skuEntity.StoreId
 	model.SkuId = skuEntity.SkuId
 	model.SkuName = skuEntity.SkuName
 	model.SellAmount = skuEntity.SellAmount
@@ -49,21 +48,18 @@ func (model skuModel) convertEntityToModel(skuEntity *entity.SkuEntity) {
 	model.Deleted = skuEntity.Deleted
 	model.IsDefault = skuEntity.IsDefault
 	model.Code = skuEntity.Code
-	model.MinimumStock = skuEntity.MinimumStock
 }
 
 func (model skuModel) convertModelToEntity() *entity.SkuEntity {
 	return &entity.SkuEntity{
-		StoreId:      model.StoreId,
-		SpuId:        model.SpuId,
-		SkuId:        model.SkuId,
-		SkuName:      model.SkuName,
-		SellAmount:   model.SellAmount,
-		CostAmount:   model.CostAmount,
-		Deleted:      model.Deleted,
-		IsDefault:    model.IsDefault,
-		Code:         model.Code,
-		MinimumStock: model.MinimumStock,
+		SpuId:      model.SpuId,
+		SkuId:      model.SkuId,
+		SkuName:    model.SkuName,
+		SellAmount: model.SellAmount,
+		CostAmount: model.CostAmount,
+		Deleted:    model.Deleted,
+		IsDefault:  model.IsDefault,
+		Code:       model.Code,
 	}
 }
 
@@ -82,33 +78,33 @@ func (s SkuInfoRepoImpl) UpdateSku(ctx context.Context, sku *entity.SkuEntity) e
 }
 
 // DeleteSku delete sku
-func (s SkuInfoRepoImpl) DeleteSku(ctx context.Context, storeId, skuId string) error {
-	return s.db.Table(s.tableName).Where("sku_id = ?", skuId).Update("deleted", true).Error
+func (s SkuInfoRepoImpl) DeleteSku(ctx context.Context, skuId string) error {
+	return s.db.Table(s.tableName).Where("sku_id = ?", skuId).Update("deleted", false).Error
 }
 
 // DeleteSkuBySpuId delete sku by spu id
-func (s SkuInfoRepoImpl) DeleteSkuBySpuId(ctx context.Context, storeId, spuId string) error {
-	return s.db.Table(s.tableName).Where("spu_id = ?", spuId).Update("deleted", true).Error
+func (s SkuInfoRepoImpl) DeleteSkuBySpuId(ctx context.Context, spuId string) error {
+	return s.db.Table(s.tableName).Where("spu_id = ?", spuId).Update("deleted", false).Error
 }
 
-// GetSkuListByStoreId get sku list
-func (s SkuInfoRepoImpl) GetSkuListByStoreId(ctx context.Context, storeId string) ([]*entity.SkuEntity, error) {
+// GetSkuList get sku list
+func (s SkuInfoRepoImpl) GetSkuList(ctx context.Context) ([]*entity.SkuEntity, error) {
 	modelList := make([]skuModel, 0)
 	entityList := make([]*entity.SkuEntity, 0)
 
-	s.db.Table(s.tableName).Where("store_id = ?", storeId).Find(&modelList)
+	s.db.Table(s.tableName).Where("deleted", false).Find(&modelList)
 	for _, model := range modelList {
 		entityList = append(entityList, model.convertModelToEntity())
 	}
 	return entityList, nil
 }
 
-// GetSkuListByStoreIdAndSpuId get sku list
-func (s SkuInfoRepoImpl) GetSkuListByStoreIdAndSpuId(ctx context.Context, storeId, spuId string) ([]*entity.SkuEntity, error) {
+// GetSkuListBySpuId get sku list
+func (s SkuInfoRepoImpl) GetSkuListBySpuId(ctx context.Context, spuId string) ([]*entity.SkuEntity, error) {
 	modelList := make([]skuModel, 0)
 	entityList := make([]*entity.SkuEntity, 0)
 
-	s.db.Table(s.tableName).Where("store_id = ?", storeId).Where("spu_id", spuId).Find(&modelList)
+	s.db.Table(s.tableName).Where("spu_id", spuId).Find(&modelList)
 	for _, model := range modelList {
 		entityList = append(entityList, model.convertModelToEntity())
 	}
