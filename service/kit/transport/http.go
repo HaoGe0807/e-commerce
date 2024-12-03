@@ -48,6 +48,11 @@ func MakeHTTPHandler(svcEndpoint endpoint.Set, options []httptransport.ServerOpt
 	{
 		r.Handle("/monitor/prometheus", promhttp.Handler())
 	}
+	// 配置Swagger UI路由
+	swaggerRouter := r.PathPrefix("/swagger").Subrouter()
+	swaggerRouter.Methods("GET").Path("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "docs/swagger-ui/index.html")
+	}))
 
 	// use tracing middleware
 	r.Use(traceMiddleware)

@@ -18,7 +18,7 @@ func Init() {
 func initDBConnection(name string) {
 	log.Info("Connect to Mysql database", zap.String("name", name))
 	// 通用参数
-	addr := "127.0.0.1:3306"
+	addr := "localhost:3306"
 	username := "root"
 	password := ""
 	maxOpenConns := 10
@@ -53,8 +53,8 @@ func initRedisConnection() {
 func Close() {
 	orm.GetORM(consts.DB_NAME).Close()
 
-	redis.GetClient(consts.REDIS_NAME).Close()
-	redis.GetClient(consts.REDIS_STOCK_LOCK).Close()
+	//redis.GetClient(consts.REDIS_NAME).Close()
+	//redis.GetClient(consts.REDIS_STOCK_LOCK).Close()
 }
 
 func IsRecordNotFoundError(err error) bool {
