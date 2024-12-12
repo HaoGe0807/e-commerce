@@ -2,44 +2,46 @@ package endpoint
 
 import (
 	productVO "e-commerce/service/app/product/vo"
-	productEntity "e-commerce/service/domain/product/entity"
-	"e-commerce/service/infra/ebus"
+	"e-commerce/service/domain/product/entity"
+	"encoding/json"
 )
 
 type Response interface {
 	ToJson() ([]byte, error)
 }
 
-type Sku struct {
-	SkuName    string     `json:"sku_name" validate:"required"`
-	SellAmount ebus.Money `json:"sell_amount" validate:"required"`
-	CostAmount ebus.Money `json:"cost_amount" validate:"required"`
-	IsDefault  bool       `json:"is_default" validate:"required"`
-	Code       string     `json:"code" validate:"required"`
-	Stock      int64      `json:"stock" validate:"required"`
-}
-
 type CreateProductReq struct {
-	ProductName string                    `json:"product_name" validate:"required"`
-	CategoryId  string                    `json:"category_id" validate:"required"`
-	Skus        []productEntity.SkuEntity `json:"skus" validate:"required"`
-	Icon        string                    `json:"icon"`
-	Status      string                    `json:"status" validate:"required"`
+	ProductName string             `json:"product_name" validate:"required"`
+	CategoryId  string             `json:"category_id" validate:"required"`
+	Skus        []entity.SkuEntity `json:"skus" validate:"required"`
+	Icon        string             `json:"icon"`
+	Status      string             `json:"status" validate:"required"`
 }
 
 type CreateProductResp struct {
+	*productVO.ProductVO
+}
+
+func (resp *CreateProductResp) ToJson() ([]byte, error) {
+	return json.Marshal(resp)
 }
 
 type UpdateProductReq struct {
-	SpuId       string                    `json:"spu_id" validate:"required"`
-	ProductName string                    `json:"product_name" validate:"required"`
-	CategoryId  string                    `json:"category_id" validate:"required"`
-	Skus        []productEntity.SkuEntity `json:"skus" validate:"required"`
-	Status      string                    `json:"status" validate:"required"`
-	Icon        string                    `json:"icon"`
+	SpuId       string             `json:"spu_id" validate:"required"`
+	ProductName string             `json:"product_name" validate:"required"`
+	CategoryId  string             `json:"category_id" validate:"required"`
+	Skus        []entity.SkuEntity `json:"skus" validate:"required"`
+	Status      string             `json:"status" validate:"required"`
+	Icon        string             `json:"icon"`
 }
 
-type UpdateProductResp struct{}
+type UpdateProductResp struct {
+	*productVO.ProductVO
+}
+
+func (resp *UpdateProductResp) ToJson() ([]byte, error) {
+	return json.Marshal(resp)
+}
 
 type DeleteProductReq struct {
 	SpuId string `json:"spu_id" validate:"required"`
@@ -51,9 +53,21 @@ type QueryProductReq struct {
 	SpuId string `json:"spu_id" validate:"required"`
 }
 
-type QueryProductResp productVO.ProductVO
+type QueryProductResp struct {
+	*productVO.ProductVO
+}
+
+func (resp *QueryProductResp) ToJson() ([]byte, error) {
+	return json.Marshal(resp)
+}
 
 type QueryProductListReq struct {
 }
 
-type QueryProductListResp []productVO.ProductVO
+type QueryProductListResp struct {
+	Products *[]productVO.ProductVO
+}
+
+func (resp *QueryProductListResp) ToJson() ([]byte, error) {
+	return json.Marshal(resp)
+}

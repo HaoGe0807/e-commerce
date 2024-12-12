@@ -2,13 +2,13 @@ package entity
 
 type ProductAggInfo struct {
 	// spu info
-	SpuId       string
-	CategoryId  string
-	ProductName string
-	Status      string
-	Icon        string
-	Deleted     bool
+	SpuId       string `json:"spu_id"`
+	CategoryId  string `json:"category_id"`
+	ProductName string `json:"product_name"`
+	Status      string `json:"status"`
+	Icon        string `json:"icon"`
+	Deleted     bool   `json:"deleted"`
 
 	// sku info
-	Skus []SkuEntity
+	Skus []SkuEntity `json:"skus"`
 }

@@ -6,9 +6,9 @@ import (
 )
 
 type CategoryEntity struct {
-	CategoryId   string
-	CategoryName string
-	Deleted      bool
+	CategoryId   string `json:"category_id"`
+	CategoryName string `json:"category_name"`
+	Deleted      bool   `json:"deleted"`
 }
 
 // 为CategoryEntity填充字段值

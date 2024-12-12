@@ -26,7 +26,7 @@ func NewCategoryRepo() repo.CategoryRepo {
 }
 
 type categoryModel struct {
-	CategoryId   string `gorm:"column:category_id"`
+	CategoryId   string `gorm:"column:category_id;primary_key"`
 	CategoryName string `gorm:"column:category_name"`
 	Deleted      bool   `gorm:"column:deleted"`
 }

@@ -26,7 +26,7 @@ func NewSpuRepo() repo.SpuRepo {
 }
 
 type spuModel struct {
-	SpuId       string `gorm:"column:spu_id"`
+	SpuId       string `gorm:"column:spu_id;primary_key"`
 	CategoryId  string `gorm:"column:category_id"`
 	ProductName string `gorm:"column:product_name"`
 	Status      string `gorm:"column:status"`
@@ -34,7 +34,7 @@ type spuModel struct {
 	Deleted     bool   `gorm:"column:deleted"`
 }
 
-func (model spuModel) convertEntityToModel(spuEntity *entity.SpuEntity) {
+func (model *spuModel) convertEntityToModel(spuEntity *entity.SpuEntity) {
 	model.SpuId = spuEntity.SpuId
 	model.CategoryId = spuEntity.CategoryId
 	model.ProductName = spuEntity.ProductName
@@ -43,7 +43,7 @@ func (model spuModel) convertEntityToModel(spuEntity *entity.SpuEntity) {
 	model.Deleted = spuEntity.Deleted
 }
 
-func (model spuModel) convertModelToEntity() *entity.SpuEntity {
+func (model *spuModel) convertModelToEntity() *entity.SpuEntity {
 	return &entity.SpuEntity{
 		SpuId:       model.SpuId,
 		CategoryId:  model.CategoryId,
@@ -56,27 +56,27 @@ func (model spuModel) convertModelToEntity() *entity.SpuEntity {
 
 // CreateSpu 创建
 func (s SpuInfoRepoImpl) CreateSpu(ctx context.Context, spu *entity.SpuEntity) error {
-	model := spuModel{}
+	model := &spuModel{}
 	model.convertEntityToModel(spu)
-	return s.db.Table(s.tableName).Create(&model).Error
+	return s.db.Table(s.tableName).Create(model).Error
 }
 
 // UpdateSpu 更新
 func (s SpuInfoRepoImpl) UpdateSpu(ctx context.Context, spu *entity.SpuEntity) error {
-	model := spuModel{}
+	model := &spuModel{}
 	model.convertEntityToModel(spu)
-	return s.db.Table(s.tableName).Save(&model).Error
+	return s.db.Table(s.tableName).Save(model).Error
 }
 
 // DeleteSpu 删除
 func (s SpuInfoRepoImpl) DeleteSpu(ctx context.Context, spuId string) error {
-	return s.db.Table(s.tableName).Where("spu_id = ?", spuId).Update("deleted", false).Error
+	return s.db.Table(s.tableName).Where("spu_id = ?", spuId).Update("deleted", true).Error
 }
 
 // GetSpu 获取
 func (s SpuInfoRepoImpl) GetSpu(ctx context.Context, spuId string) (*entity.SpuEntity, error) {
-	model := spuModel{}
-	s.db.Table(s.tableName).Where("spu_id = ?", spuId).First(&model)
+	model := &spuModel{}
+	s.db.Table(s.tableName).Where("spu_id = ?", spuId).Where("deleted = ?", false).First(model)
 	return model.convertModelToEntity(), nil
 }
 
@@ -85,7 +85,7 @@ func (s SpuInfoRepoImpl) GetSpuList(ctx context.Context) ([]*entity.SpuEntity, e
 	modelList := make([]spuModel, 0)
 	entityList := make([]*entity.SpuEntity, 0)
 
-	s.db.Table(s.tableName).Where("deleted", false).Find(&modelList)
+	s.db.Table(s.tableName).Where("deleted = ?", false).Find(&modelList)
 	for _, model := range modelList {
 		entityList = append(entityList, model.convertModelToEntity())
 	}
@@ -97,7 +97,7 @@ func (s SpuInfoRepoImpl) GetSpuListByCategoryId(ctx context.Context, categoryId 
 	modelList := make([]spuModel, 0)
 	entityList := make([]*entity.SpuEntity, 0)
 
-	s.db.Table(s.tableName).Where("category_id = ?", categoryId).Find(&modelList)
+	s.db.Table(s.tableName).Where("category_id = ?", categoryId).Where("deleted = ?", false).Find(&modelList)
 	for _, model := range modelList {
 		entityList = append(entityList, model.convertModelToEntity())
 	}

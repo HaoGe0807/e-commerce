@@ -1,0 +1,4 @@
+go.mod
+go.sum
+docs/*
+service/infra/repo/db.go

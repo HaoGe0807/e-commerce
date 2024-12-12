@@ -78,9 +78,12 @@ func ModelIdNext(modelName string) string {
 	firstChar = strings.ToUpper(firstChar)
 	// 获取当前时间戳
 	currentTime := time.Now().Unix()
+	// 将当前时间戳转为20241212这种结构
+	currentTimeStr := time.Unix(currentTime, 0).Format("20060102")
 	// 当前时间戳后跟五位随机数
 	randomNum := rand.Intn(90000) + 10000
 	// 拼接字符串
-	id := firstChar + strconv.FormatInt(currentTime, 10) + strconv.Itoa(randomNum)
+	//id := firstChar + strconv.FormatInt(currentTime, 10) + strconv.Itoa(randomNum)
+	id := firstChar + currentTimeStr + strconv.Itoa(randomNum)
 	return id
 }

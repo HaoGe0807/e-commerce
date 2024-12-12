@@ -7,14 +7,14 @@ import (
 )
 
 type SkuEntity struct {
-	SpuId      string
-	SkuId      string
-	SkuName    string
-	SellAmount ebus.Money
-	CostAmount ebus.Money
-	Deleted    bool
-	IsDefault  bool
-	Code       string
+	SpuId      string     `json:"spu_id"`
+	SkuId      string     `json:"sku_id"`
+	SkuName    string     `json:"sku_name"`
+	SellAmount ebus.Money `json:"sell_amount"`
+	CostAmount ebus.Money `json:"cost_amount"`
+	Deleted    bool       `json:"deleted"`
+	IsDefault  bool       `json:"is_default"`
+	Code       string     `json:"code"`
 }
 
 // 为skuEntity填充字段值

@@ -33,8 +33,6 @@ func (p ProductService) CreateProduct(ctx context.Context, productName string, c
 		return err
 	}
 
-	// create inv
-
 	return nil
 }
 
@@ -63,10 +61,7 @@ func (p ProductService) QueryProduct(ctx context.Context, spuId string) (product
 		return productVO.ProductVO{}, err
 	}
 
-	// 查询库存
-	inv := []string{}
-
-	return productVO.ProductBOToVO(productInfo, inv), nil
+	return productVO.ProductBOToVO(productInfo), nil
 }
 
 func (p ProductService) QueryProductList(ctx context.Context) ([]productVO.ProductVO, error) {
@@ -75,12 +70,10 @@ func (p ProductService) QueryProductList(ctx context.Context) ([]productVO.Produ
 		return nil, err
 	}
 
-	// 查询库存
-	inv := []string{}
-	resp := make([]productVO.ProductVO, len(productList))
+	resp := make([]productVO.ProductVO, 0)
 
 	for _, info := range productList {
-		resp = append(resp, productVO.ProductBOToVO(info, inv))
+		resp = append(resp, productVO.ProductBOToVO(info))
 	}
 	return resp, nil
 }

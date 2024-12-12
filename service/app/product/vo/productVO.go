@@ -30,7 +30,7 @@ type skuVO struct {
 
 type ProductVOList []ProductVO
 
-func ProductBOToVO(info entity.ProductAggInfo, inv []string) ProductVO {
+func ProductBOToVO(info entity.ProductAggInfo) ProductVO {
 	return ProductVO{
 		SpuId:       info.SpuId,
 		CategoryId:  info.CategoryId,
@@ -38,11 +38,11 @@ func ProductBOToVO(info entity.ProductAggInfo, inv []string) ProductVO {
 		Status:      info.Status,
 		Icon:        info.Icon,
 		Deleted:     info.Deleted,
-		Skus:        skuBOToVO(info.Skus, inv),
+		Skus:        skuBOToVO(info.Skus),
 	}
 }
 
-func skuBOToVO(skuEntityList []entity.SkuEntity, inv []string) []skuVO {
+func skuBOToVO(skuEntityList []entity.SkuEntity) []skuVO {
 	skuListVO := make([]skuVO, 0)
 	for _, skuEntity := range skuEntityList {
 		skuListVO = append(skuListVO, skuVO{
@@ -54,7 +54,6 @@ func skuBOToVO(skuEntityList []entity.SkuEntity, inv []string) []skuVO {
 			Deleted:    skuEntity.Deleted,
 			IsDefault:  skuEntity.IsDefault,
 			Code:       skuEntity.Code,
-			stock:      0,
 		})
 	}
 	return skuListVO

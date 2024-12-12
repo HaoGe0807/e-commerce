@@ -9,6 +9,7 @@ import (
 	"e-commerce/service/infra/repo/product"
 	"e-commerce/service/infra/utils"
 	"errors"
+	"fmt"
 	"regexp"
 	"sync"
 )
@@ -33,10 +34,11 @@ func NewProductDomainImpl() *ProductDomainImpl {
 func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (string, error) {
 
 	// check category
-	_, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
+	categoryInfo, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("categoryInfo:", categoryInfo)
 
 	spuBO := &entity.SpuEntity{}
 
@@ -169,11 +171,13 @@ func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) 
 func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (entity.ProductAggInfo, error) {
 
 	spuBO, err := impl.SpuRepo.GetSpu(ctx, spuId)
+	fmt.Println("spuBO:", spuBO)
 	if err != nil {
 		return entity.ProductAggInfo{}, err
 	}
 
 	skuBOs, err := impl.SkuRepo.GetSkuListBySpuId(ctx, spuId)
+	fmt.Println("skuBOs:", skuBOs)
 	if err != nil {
 		return entity.ProductAggInfo{}, err
 	}
@@ -207,15 +211,16 @@ func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]entity.P
 		return nil, err
 	}
 
-	productList := make([]entity.ProductAggInfo, len(spuBOlist))
+	productList := make([]entity.ProductAggInfo, 0)
 	skuMap := make(map[string][]entity.SkuEntity)
 	for _, v := range skuBOList {
 		if _, ok := skuMap[v.SkuName]; !ok {
 			skuList := make([]entity.SkuEntity, 0)
 			skuList = append(skuList, *v)
 			skuMap[v.SpuId] = skuList
+		} else {
+			skuMap[v.SkuName] = append(skuMap[v.SkuName], *v)
 		}
-		skuMap[v.SkuName] = append(skuMap[v.SkuName], *v)
 	}
 
 	for _, v := range spuBOlist {
