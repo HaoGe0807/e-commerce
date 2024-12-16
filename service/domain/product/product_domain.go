@@ -31,12 +31,11 @@ func NewProductDomainImpl() *ProductDomainImpl {
 	return impl
 }
 
-func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (string, error) {
-
+func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (*entity.ProductAggInfo, error) {
 	// check category
 	categoryInfo, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	fmt.Println("categoryInfo:", categoryInfo)
 
@@ -45,13 +44,13 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 	// spu contract
 	spuBO, err = impl.spuContract(ctx, spuBO, productName, categoryId, status, icon)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// create spu
 	err = impl.SpuRepo.CreateSpu(ctx, spuBO)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// skuname list
@@ -61,12 +60,12 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 
 	for _, sku := range skus {
 		if utils.ContainsString(skuNames, sku.SkuName) {
-			return "", errors.New("sku name is duplicate")
+			return nil, errors.New("sku name is duplicate")
 		}
 		skuNames = append(skuNames, sku.SkuName)
 
 		if isDefaultTag {
-			return "", errors.New("isDefault is only one")
+			return nil, errors.New("isDefault is only one")
 		}
 		if sku.IsDefault {
 			isDefaultTag = true
@@ -74,28 +73,28 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 	}
 
 	if !isDefaultTag {
-		return "", errors.New("isDefault is not set")
+		return nil, errors.New("isDefault is not set")
 	}
 
 	for _, sku := range skus {
 		skuBO, err := impl.skuContract(ctx, &sku, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		err = impl.SkuRepo.CreateSku(ctx, skuBO)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 
-	return spuBO.SpuId, nil
+	return entity.ConvertToProductAggInfo(spuBO, skus), nil
 }
-func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) error {
+func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (*entity.ProductAggInfo, error) {
 	// check category
 	_, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// get spu
@@ -104,12 +103,12 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	// spu contract
 	spuBO, err = impl.spuContract(ctx, spuBO, productName, categoryId, status, icon)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = impl.SpuRepo.UpdateSpu(ctx, spuBO)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// skuname list
@@ -120,12 +119,12 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	// update sku
 	for _, sku := range skus {
 		if utils.ContainsString(skuNames, sku.SkuName) {
-			return errors.New("sku name is duplicate")
+			return nil, errors.New("sku name is duplicate")
 		}
 		skuNames = append(skuNames, sku.SkuName)
 
 		if isDefaultTag {
-			return errors.New("isDefault is only one")
+			return nil, errors.New("isDefault is only one")
 		}
 		if sku.IsDefault {
 			isDefaultTag = true
@@ -133,22 +132,22 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	}
 
 	if !isDefaultTag {
-		return errors.New("isDefault is not set")
+		return nil, errors.New("isDefault is not set")
 	}
 
 	for _, sku := range skus {
 		skuBO, err := impl.skuContract(ctx, &sku, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		err = impl.SkuRepo.UpdateSku(ctx, skuBO)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return entity.ConvertToProductAggInfo(spuBO, skus), nil
 }
 func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) error {
 
@@ -168,18 +167,18 @@ func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) 
 
 	return nil
 }
-func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (entity.ProductAggInfo, error) {
+func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (*entity.ProductAggInfo, error) {
 
 	spuBO, err := impl.SpuRepo.GetSpu(ctx, spuId)
 	fmt.Println("spuBO:", spuBO)
 	if err != nil {
-		return entity.ProductAggInfo{}, err
+		return nil, err
 	}
 
 	skuBOs, err := impl.SkuRepo.GetSkuListBySpuId(ctx, spuId)
 	fmt.Println("skuBOs:", skuBOs)
 	if err != nil {
-		return entity.ProductAggInfo{}, err
+		return nil, err
 	}
 
 	var skus []entity.SkuEntity
@@ -189,7 +188,7 @@ func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (
 		}
 	}
 
-	return entity.ProductAggInfo{
+	return &entity.ProductAggInfo{
 		SpuId:       spuBO.SpuId,
 		CategoryId:  spuBO.CategoryId,
 		ProductName: spuBO.ProductName,
@@ -199,7 +198,7 @@ func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (
 		Skus:        skus,
 	}, nil
 }
-func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]entity.ProductAggInfo, error) {
+func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]*entity.ProductAggInfo, error) {
 
 	spuBOlist, err := impl.SpuRepo.GetSpuList(ctx)
 	if err != nil {
@@ -211,7 +210,7 @@ func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]entity.P
 		return nil, err
 	}
 
-	productList := make([]entity.ProductAggInfo, 0)
+	productList := make([]*entity.ProductAggInfo, 0)
 	skuMap := make(map[string][]entity.SkuEntity)
 	for _, v := range skuBOList {
 		if _, ok := skuMap[v.SkuName]; !ok {
@@ -224,7 +223,7 @@ func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]entity.P
 	}
 
 	for _, v := range spuBOlist {
-		productList = append(productList, entity.ProductAggInfo{
+		productList = append(productList, &entity.ProductAggInfo{
 			SpuId:       v.SpuId,
 			CategoryId:  v.CategoryId,
 			ProductName: v.ProductName,

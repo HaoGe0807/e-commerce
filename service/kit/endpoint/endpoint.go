@@ -56,7 +56,7 @@ func NewCreateProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		req := request.(CreateProductReq)
 
-		err = service.CreateProduct(ctx, req.ProductName, req.CategoryId, req.Skus, req.Status, req.Icon)
+		productAggInfo, err := service.CreateProduct(ctx, req.ProductName, req.CategoryId, req.Skus, req.Status, req.Icon)
 		if err != nil {
 			return nil, err
 		}

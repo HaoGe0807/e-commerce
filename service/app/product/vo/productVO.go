@@ -6,32 +6,31 @@ import (
 )
 
 type ProductVO struct {
-	SpuId       string
-	CategoryId  string
-	ProductName string
-	Status      string
-	Icon        string
-	Deleted     bool
+	SpuId       string `json:"spu_id"`
+	CategoryId  string `json:"category_id"`
+	ProductName string `json:"product_name"`
+	Status      string `json:"status"`
+	Icon        string `json:"icon"`
+	Deleted     bool   `json:"deleted"`
 	// sku info
-	Skus []skuVO
+	Skus []skuVO `json:"skus"`
 }
 
 type skuVO struct {
-	SpuId      string
-	SkuId      string
-	SkuName    string
-	SellAmount ebus.Money
-	CostAmount ebus.Money
-	Deleted    bool
-	IsDefault  bool
-	Code       string
-	stock      int64
+	SpuId      string     `json:"spu_id"`
+	SkuId      string     `json:"sku_id"`
+	SkuName    string     `json:"sku_name"`
+	SellAmount ebus.Money `json:"sell_amount"`
+	CostAmount ebus.Money `json:"cost_amount"`
+	Deleted    bool       `json:"deleted"`
+	IsDefault  bool       `json:"is_default"`
+	Code       string     `json:"code"`
 }
 
 type ProductVOList []ProductVO
 
-func ProductBOToVO(info entity.ProductAggInfo) ProductVO {
-	return ProductVO{
+func ProductBOToVO(info *entity.ProductAggInfo) *ProductVO {
+	return &ProductVO{
 		SpuId:       info.SpuId,
 		CategoryId:  info.CategoryId,
 		ProductName: info.ProductName,
