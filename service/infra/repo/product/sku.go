@@ -117,3 +117,38 @@ func (s SkuInfoRepoImpl) GetSkuListBySpuId(ctx context.Context, spuId string) ([
 	}
 	return entityList, nil
 }
+
+func (s SkuInfoRepoImpl) SaveSkuListBySpuId(ctx context.Context, skus []*entity.SkuEntity, spuId string) error {
+	skuBOList, err := s.GetSkuListBySpuId(ctx, spuId)
+	if err != nil {
+		return err
+	}
+
+	//对比skuBOList 和 skus ，若存在skuBOList存在skus中不存在的skuBO，则将这批skuBO的deleted字段置为true
+	for _, skuBO := range skuBOList {
+		if !isExist(skuBO, skus) {
+			err = s.DeleteSku(ctx, skuBO.SkuId)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, skuEntity := range skus {
+		err = s.UpdateSku(ctx, skuEntity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func isExist(skuBO *entity.SkuEntity, skus []*entity.SkuEntity) bool {
+	for _, sku := range skus {
+		if skuBO.SkuId == sku.SkuId {
+			return true
+		}
+	}
+	return false
+}

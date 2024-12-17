@@ -11,20 +11,24 @@ func (e Err) Error() string {
 	panic("implement me")
 }
 
-func ErrorEnum(code int32, msg string) error {
+func ErrorEnum(code int32, msg ...string) error {
 	err := new(Err)
+	var message string
+	if len(msg) > 0 {
+		message = msg[0]
+	}
 
-	if msg == "" {
+	if message == "" {
 		if errorMessages[ErrorCode(code)] != "" {
-			msg = errorMessages[ErrorCode(code)]
+			message = errorMessages[ErrorCode(code)]
 		} else {
 			code = DOMAIN_ERROR
-			msg = errorMessages[ErrorCode(code)]
+			message = errorMessages[ErrorCode(code)]
 		}
 	}
 
 	err.Code = code
-	err.Msg = msg
+	err.Msg = message
 	return err
 }
 
@@ -64,12 +68,18 @@ const (
 	BIZ_ERROR    = 100001
 	DOMAIN_ERROR = 100002
 
-	// product
-
+	// product  1001号段
+	SKU_NAME_DUPLICATE           = 100100
+	PRODUCT_ONLY_ONE_DEFAULT_SKU = 100101
+	SKU_CODE_ERROR               = 100102
 )
 
 var errorMessages = map[ErrorCode]string{
 	PARAMS_ERROR: "参数异常",
 	BIZ_ERROR:    "业务服务异常",
 	DOMAIN_ERROR: "领域服务异常",
+
+	SKU_NAME_DUPLICATE:           "规格名称重复",
+	PRODUCT_ONLY_ONE_DEFAULT_SKU: "商品只能有一个默认规格",
+	SKU_CODE_ERROR:               "规格条码不符合要求",
 }

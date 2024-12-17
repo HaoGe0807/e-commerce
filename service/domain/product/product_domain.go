@@ -5,10 +5,10 @@ import (
 	"e-commerce/service/domain/product/entity"
 	"e-commerce/service/domain/product/repo"
 	"e-commerce/service/infra/ebus"
+	"e-commerce/service/infra/errors"
 	"e-commerce/service/infra/log"
 	"e-commerce/service/infra/repo/product"
 	"e-commerce/service/infra/utils"
-	"errors"
 	"fmt"
 	"regexp"
 	"sync"
@@ -40,15 +40,10 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 	fmt.Println("categoryInfo:", categoryInfo)
 
 	spuBO := &entity.SpuEntity{}
+	skuBOList := make([]*entity.SkuEntity, 0)
 
 	// spu contract
 	spuBO, err = impl.spuContract(ctx, spuBO, productName, categoryId, status, icon)
-	if err != nil {
-		return nil, err
-	}
-
-	// create spu
-	err = impl.SpuRepo.CreateSpu(ctx, spuBO)
 	if err != nil {
 		return nil, err
 	}
@@ -60,12 +55,12 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 
 	for _, sku := range skus {
 		if utils.ContainsString(skuNames, sku.SkuName) {
-			return nil, errors.New("sku name is duplicate")
+			return nil, errors.ErrorEnum(errors.SKU_NAME_DUPLICATE)
 		}
 		skuNames = append(skuNames, sku.SkuName)
 
-		if isDefaultTag {
-			return nil, errors.New("isDefault is only one")
+		if isDefaultTag && sku.IsDefault {
+			return nil, errors.ErrorEnum(errors.PRODUCT_ONLY_ONE_DEFAULT_SKU)
 		}
 		if sku.IsDefault {
 			isDefaultTag = true
@@ -73,22 +68,30 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 	}
 
 	if !isDefaultTag {
-		return nil, errors.New("isDefault is not set")
+		return nil, errors.ErrorEnum(errors.PRODUCT_ONLY_ONE_DEFAULT_SKU)
 	}
 
 	for _, sku := range skus {
+		skuBO := &entity.SkuEntity{}
 		skuBO, err := impl.skuContract(ctx, &sku, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code)
 		if err != nil {
 			return nil, err
 		}
 
-		err = impl.SkuRepo.CreateSku(ctx, skuBO)
-		if err != nil {
-			return nil, err
-		}
+		skuBOList = append(skuBOList, skuBO)
 	}
 
-	return entity.ConvertToProductAggInfo(spuBO, skus), nil
+	// create spu
+	err = impl.SpuRepo.CreateSpu(ctx, spuBO)
+	if err != nil {
+		return nil, err
+	}
+	err = impl.SkuRepo.SaveSkuListBySpuId(ctx, skuBOList, spuBO.SpuId)
+	if err != nil {
+		return nil, err
+	}
+
+	return entity.ConvertToProductAggInfo(spuBO, skuBOList), nil
 }
 func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (*entity.ProductAggInfo, error) {
 	// check category
@@ -106,11 +109,6 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 		return nil, err
 	}
 
-	err = impl.SpuRepo.UpdateSpu(ctx, spuBO)
-	if err != nil {
-		return nil, err
-	}
-
 	// skuname list
 	skuNames := make([]string, 0)
 	// isdefault is only one
@@ -119,12 +117,12 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	// update sku
 	for _, sku := range skus {
 		if utils.ContainsString(skuNames, sku.SkuName) {
-			return nil, errors.New("sku name is duplicate")
+			return nil, errors.ErrorEnum(errors.SKU_NAME_DUPLICATE)
 		}
 		skuNames = append(skuNames, sku.SkuName)
 
 		if isDefaultTag {
-			return nil, errors.New("isDefault is only one")
+			return nil, errors.ErrorEnum(errors.PRODUCT_ONLY_ONE_DEFAULT_SKU)
 		}
 		if sku.IsDefault {
 			isDefaultTag = true
@@ -132,22 +130,30 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	}
 
 	if !isDefaultTag {
-		return nil, errors.New("isDefault is not set")
+		return nil, errors.ErrorEnum(errors.PRODUCT_ONLY_ONE_DEFAULT_SKU)
 	}
 
+	skuBOList := make([]*entity.SkuEntity, 0)
 	for _, sku := range skus {
+		skuBO := &entity.SkuEntity{}
 		skuBO, err := impl.skuContract(ctx, &sku, spuBO.SpuId, sku.SkuName, sku.SellAmount, sku.CostAmount, sku.IsDefault, sku.Code)
 		if err != nil {
 			return nil, err
 		}
 
-		err = impl.SkuRepo.UpdateSku(ctx, skuBO)
-		if err != nil {
-			return nil, err
-		}
+		skuBOList = append(skuBOList, skuBO)
 	}
 
-	return entity.ConvertToProductAggInfo(spuBO, skus), nil
+	err = impl.SpuRepo.UpdateSpu(ctx, spuBO)
+	if err != nil {
+		return nil, err
+	}
+
+	err = impl.SkuRepo.SaveSkuListBySpuId(ctx, skuBOList, spuBO.SpuId)
+	if err != nil {
+		return nil, err
+	}
+	return entity.ConvertToProductAggInfo(spuBO, skuBOList), nil
 }
 func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) error {
 
@@ -181,13 +187,6 @@ func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (
 		return nil, err
 	}
 
-	var skus []entity.SkuEntity
-	if skuBOs != nil {
-		for _, v := range skuBOs {
-			skus = append(skus, *v)
-		}
-	}
-
 	return &entity.ProductAggInfo{
 		SpuId:       spuBO.SpuId,
 		CategoryId:  spuBO.CategoryId,
@@ -195,7 +194,7 @@ func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (
 		Status:      spuBO.Status,
 		Icon:        spuBO.Icon,
 		Deleted:     spuBO.Deleted,
-		Skus:        skus,
+		Skus:        skuBOs,
 	}, nil
 }
 func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]*entity.ProductAggInfo, error) {
@@ -211,14 +210,14 @@ func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]*entity.
 	}
 
 	productList := make([]*entity.ProductAggInfo, 0)
-	skuMap := make(map[string][]entity.SkuEntity)
+	skuMap := make(map[string][]*entity.SkuEntity)
 	for _, v := range skuBOList {
-		if _, ok := skuMap[v.SkuName]; !ok {
-			skuList := make([]entity.SkuEntity, 0)
-			skuList = append(skuList, *v)
+		if _, ok := skuMap[v.SpuId]; !ok {
+			skuList := make([]*entity.SkuEntity, 0)
+			skuList = append(skuList, v)
 			skuMap[v.SpuId] = skuList
 		} else {
-			skuMap[v.SkuName] = append(skuMap[v.SkuName], *v)
+			skuMap[v.SpuId] = append(skuMap[v.SpuId], v)
 		}
 	}
 
@@ -245,6 +244,7 @@ func (impl *ProductDomainImpl) skuContract(ctx context.Context, skuBO *entity.Sk
 	re := regexp.MustCompile("^[a-zA-Z0-9]+$")
 	if !re.MatchString(code) {
 		log.Error("code is not allowed")
+		return nil, errors.ErrorEnum(errors.SKU_CODE_ERROR)
 	}
 
 	return skuBO.FillField(ctx, spuId, skuName, sellAmount, costAmount, isDefault, code), nil

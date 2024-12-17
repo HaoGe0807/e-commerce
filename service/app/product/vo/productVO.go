@@ -13,7 +13,7 @@ type ProductVO struct {
 	Icon        string `json:"icon"`
 	Deleted     bool   `json:"deleted"`
 	// sku info
-	Skus []skuVO `json:"skus"`
+	Skus []*skuVO `json:"skus"`
 }
 
 type skuVO struct {
@@ -41,10 +41,10 @@ func ProductBOToVO(info *entity.ProductAggInfo) *ProductVO {
 	}
 }
 
-func skuBOToVO(skuEntityList []entity.SkuEntity) []skuVO {
-	skuListVO := make([]skuVO, 0)
+func skuBOToVO(skuEntityList []*entity.SkuEntity) []*skuVO {
+	skuListVO := make([]*skuVO, 0)
 	for _, skuEntity := range skuEntityList {
-		skuListVO = append(skuListVO, skuVO{
+		skuListVO = append(skuListVO, &skuVO{
 			SpuId:      skuEntity.SpuId,
 			SkuId:      skuEntity.SkuId,
 			SkuName:    skuEntity.SkuName,
