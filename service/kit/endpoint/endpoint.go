@@ -13,6 +13,12 @@ type Set struct {
 	DeleteProductEP    goEndpoint.Endpoint
 	QueryProductEP     goEndpoint.Endpoint
 	QueryProductListEP goEndpoint.Endpoint
+
+	CreateCategoryEP    goEndpoint.Endpoint
+	UpdateCategoryEP    goEndpoint.Endpoint
+	DeleteCategoryEP    goEndpoint.Endpoint
+	QueryCategoryEP     goEndpoint.Endpoint
+	QueryCategoryListEP goEndpoint.Endpoint
 }
 
 func New(service app.ECommerceService) Set {
@@ -35,6 +41,26 @@ func New(service app.ECommerceService) Set {
 	queryProductListEP := NewQueryProductListEP(service)
 	queryProductListEP = utils.LoggingMiddleware()(queryProductListEP)
 	queryProductListEP = utils.ParameterCheckMiddleware()(queryProductListEP)
+
+	createCategoryEP := NewCreateCategoryEP(service)
+	createCategoryEP = utils.LoggingMiddleware()(createCategoryEP)
+	createCategoryEP = utils.ParameterCheckMiddleware()(createCategoryEP)
+
+	updateCategoryEP := NewUpdateCategoryEP(service)
+	updateCategoryEP = utils.LoggingMiddleware()(updateCategoryEP)
+	updateCategoryEP = utils.ParameterCheckMiddleware()(updateCategoryEP)
+
+	deleteCategoryEP := NewDeleteCategoryEP(service)
+	deleteCategoryEP = utils.LoggingMiddleware()(deleteCategoryEP)
+	deleteCategoryEP = utils.ParameterCheckMiddleware()(deleteCategoryEP)
+
+	queryCategoryEP := NewQueryCategoryEP(service)
+	queryCategoryEP = utils.LoggingMiddleware()(queryCategoryEP)
+	queryCategoryEP = utils.ParameterCheckMiddleware()(queryCategoryEP)
+
+	queryCategoryListEP := NewQueryCategoryListEP(service)
+	queryCategoryListEP = utils.LoggingMiddleware()(queryCategoryListEP)
+	queryCategoryListEP = utils.ParameterCheckMiddleware()(queryCategoryListEP)
 	return Set{
 		CreateProductEP:    createProductEP,
 		UpdateProductEP:    updateProductEP,
@@ -104,8 +130,7 @@ func NewDeleteProductEP(service app.ECommerceService) goEndpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		resp := &DeleteProductResp{}
-		return resp, nil
+		return nil, nil
 	}
 }
 
@@ -148,5 +173,69 @@ func NewQueryProductListEP(service app.ECommerceService) goEndpoint.Endpoint {
 		}
 
 		return productList, nil
+	}
+}
+
+// category
+func NewCreateCategoryEP(service app.ECommerceService) goEndpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(CreateCategoryReq)
+
+		categoryInfo, err := service.CreateCategory(ctx, req.CategoryName)
+		if err != nil {
+			return nil, err
+		}
+
+		return categoryInfo, nil
+	}
+}
+
+func NewUpdateCategoryEP(service app.ECommerceService) goEndpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(UpdateCategoryReq)
+
+		categoryInfo, err := service.UpdateCategory(ctx, req.CategoryId, req.CategoryName)
+		if err != nil {
+			return nil, err
+		}
+
+		return categoryInfo, nil
+	}
+}
+
+func NewDeleteCategoryEP(service app.ECommerceService) goEndpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(DeleteCategoryReq)
+
+		err = service.DeleteCategory(ctx, req.CategoryId)
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	}
+}
+
+func NewQueryCategoryEP(service app.ECommerceService) goEndpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		req := request.(QueryCategoryReq)
+
+		categoryInfo, err := service.QueryCategory(ctx, req.CategoryId)
+		if err != nil {
+			return nil, err
+		}
+
+		return categoryInfo, nil
+	}
+}
+
+func NewQueryCategoryListEP(service app.ECommerceService) goEndpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		categoryList, err := service.QueryCategoryList(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return categoryList, nil
 	}
 }

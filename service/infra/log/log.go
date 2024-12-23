@@ -30,9 +30,9 @@ func initLogPath(serviceName string) string {
 		MkdirFile(logPath)
 	}
 
-	date := getDate()
-	outputLog := strings.Join([]string{serviceName + "_output.log", date}, "_")
-
+	//date := getDate()
+	//outputLog := strings.Join([]string{serviceName + "_output.log", date}, "_")
+	outputLog := strings.Join([]string{serviceName + "_output.log"}, "_")
 	outputLogPath := strings.Join([]string{logPath, outputLog}, "/")
 
 	return outputLogPath

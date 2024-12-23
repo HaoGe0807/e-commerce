@@ -139,7 +139,9 @@ func LoopUntilExit() {
 
 func waitSignal() {
 	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGTSTP,
+	//signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGTSTP,
+	//	syscall.SIGQUIT, syscall.SIGKILL)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP,
 		syscall.SIGQUIT, syscall.SIGKILL)
 	sig := <-ch
 	log.Info("Received Exit Signal:", sig)

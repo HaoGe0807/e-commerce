@@ -1,9 +1,7 @@
 package endpoint
 
 import (
-	productVO "e-commerce/service/app/product/vo"
 	"e-commerce/service/domain/product/entity"
-	"encoding/json"
 )
 
 type Response interface {
@@ -18,14 +16,6 @@ type CreateProductReq struct {
 	Status      string             `json:"status" validate:"required"`
 }
 
-type CreateProductResp struct {
-	*productVO.ProductVO
-}
-
-func (resp *CreateProductResp) ToJson() ([]byte, error) {
-	return json.Marshal(resp)
-}
-
 type UpdateProductReq struct {
 	SpuId       string             `json:"spu_id" validate:"required"`
 	ProductName string             `json:"product_name" validate:"required"`
@@ -35,39 +25,32 @@ type UpdateProductReq struct {
 	Icon        string             `json:"icon"`
 }
 
-type UpdateProductResp struct {
-	*productVO.ProductVO
-}
-
-func (resp *UpdateProductResp) ToJson() ([]byte, error) {
-	return json.Marshal(resp)
-}
-
 type DeleteProductReq struct {
 	SpuId string `json:"spu_id" validate:"required"`
 }
-
-type DeleteProductResp struct{}
 
 type QueryProductReq struct {
 	SpuId string `json:"spu_id" validate:"required"`
 }
 
-type QueryProductResp struct {
-	*productVO.ProductVO
-}
-
-func (resp *QueryProductResp) ToJson() ([]byte, error) {
-	return json.Marshal(resp)
-}
-
 type QueryProductListReq struct {
 }
 
-type QueryProductListResp struct {
-	Products *[]productVO.ProductVO
+type CreateCategoryReq struct {
+	CategoryName string `json:"category_name" validate:"required"`
 }
 
-func (resp *QueryProductListResp) ToJson() ([]byte, error) {
-	return json.Marshal(resp)
+type UpdateCategoryReq struct {
+	CategoryId   string `json:"category_id" validate:"required"`
+	CategoryName string `json:"category_name" validate:"required"`
 }
+
+type DeleteCategoryReq struct {
+	CategoryId string `json:"category_id" validate:"required"`
+}
+
+type QueryCategoryReq struct {
+	CategoryId string `json:"category_id" validate:"required"`
+}
+
+type QueryCategoryListReq struct{}

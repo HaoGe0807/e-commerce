@@ -73,11 +73,11 @@ func MakeHTTPHandler(svcEndpoint endpoint.Set, options []httptransport.ServerOpt
 		productRouter.Methods("POST").Path("/queryProductList").Handler(kitHttp.QueryProductListServer(svcEndpoint.QueryProductListEP, options...))
 
 		//category
-		//productRouter.Methods("POST").Path("/category/createCategory").Handler(kitHttp.CreateCategoryServer(svcEndpoint.CreateCategoryEP, options...))
-		//productRouter.Methods("POST").Path("/category/updateCategory").Handler(kitHttp.UpdateCategoryServer(svcEndpoint.UpdateCategoryEP, options...))
-		//productRouter.Methods("POST").Path("/category/deleteCategory").Handler(kitHttp.DeleteCategoryServer(svcEndpoint.DeleteCategoryEP, options...))
-		//productRouter.Methods("POST").Path("/category/queryCategory").Handler(kitHttp.QueryCategoryServer(svcEndpoint.QueryCategoryEP, options...))
-		//productRouter.Methods("POST").Path("/category/queryCategoryList").Handler(kitHttp.QueryCategoryListServer(svcEndpoint.QueryCategoryListEP, options...))
+		productRouter.Methods("POST").Path("/createCategory").Handler(kitHttp.CreateCategoryServer(svcEndpoint.CreateCategoryEP, options...))
+		productRouter.Methods("POST").Path("/updateCategory").Handler(kitHttp.UpdateCategoryServer(svcEndpoint.UpdateCategoryEP, options...))
+		productRouter.Methods("POST").Path("/deleteCategory").Handler(kitHttp.DeleteCategoryServer(svcEndpoint.DeleteCategoryEP, options...))
+		productRouter.Methods("POST").Path("/queryCategory").Handler(kitHttp.QueryCategoryServer(svcEndpoint.QueryCategoryEP, options...))
+		productRouter.Methods("POST").Path("/queryCategoryList").Handler(kitHttp.QueryCategoryListServer(svcEndpoint.QueryCategoryListEP, options...))
 	}
 
 	return r

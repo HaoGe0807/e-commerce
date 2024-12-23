@@ -52,9 +52,44 @@ func (s CategoryInfoRepoImpl) CreateCategory(ctx context.Context, category *enti
 	return s.db.Table(s.tableName).Create(&model).Error
 }
 
+func (s CategoryInfoRepoImpl) UpdateCategory(ctx context.Context, category *entity.CategoryEntity) error {
+	model := categoryModel{}
+	model.convertEntityToModel(category)
+	return s.db.Table(s.tableName).Save(&model).Error
+}
+
 func (s CategoryInfoRepoImpl) GetCategory(ctx context.Context, categoryId string) (*entity.CategoryEntity, error) {
 	model := categoryModel{}
 	s.db.Table(s.tableName).Where("category_id = ?", categoryId).First(&model)
+
+	return model.convertModelToEntity(), nil
+}
+
+func (s CategoryInfoRepoImpl) DeleteCategory(ctx context.Context, categoryId string) error {
+	return s.db.Table(s.tableName).Where("category_id = ?", categoryId).Update("deleted", true).Error
+}
+
+func (s CategoryInfoRepoImpl) GetCategoryList(ctx context.Context) ([]*entity.CategoryEntity, error) {
+	modelList := make([]categoryModel, 0)
+	entityList := make([]*entity.CategoryEntity, 0)
+
+	s.db.Table(s.tableName).Where("deleted = ?", false).Find(&modelList)
+	for _, model := range modelList {
+		entityList = append(entityList, model.convertModelToEntity())
+	}
+	return entityList, nil
+}
+
+func (s CategoryInfoRepoImpl) GetCategoryByName(ctx context.Context, categoryId, categoryName string) (*entity.CategoryEntity, error) {
+	model := categoryModel{}
+	sql := s.db.Table(s.tableName).Where("category_name = ?", categoryName).Where("deleted = ?", false)
+
+	if categoryId != "" {
+		sql.Where("category_id != ?", categoryId)
+
+	}
+
+	sql.First(&model)
 
 	return model.convertModelToEntity(), nil
 }

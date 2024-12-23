@@ -4,9 +4,11 @@ import (
 	"context"
 	"e-commerce/service/domain/product/entity"
 	"e-commerce/service/domain/product/repo"
+	"e-commerce/service/infra/consts"
 	"e-commerce/service/infra/ebus"
 	"e-commerce/service/infra/errors"
 	"e-commerce/service/infra/log"
+	"e-commerce/service/infra/redis"
 	"e-commerce/service/infra/repo/product"
 	"e-commerce/service/infra/utils"
 	"fmt"
@@ -37,7 +39,10 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("categoryInfo:", categoryInfo)
+
+	if categoryInfo.CategoryId == "" {
+		return nil, errors.ErrorEnum(errors.CATEGORY_NOT_EXIST)
+	}
 
 	spuBO := &entity.SpuEntity{}
 	skuBOList := make([]*entity.SkuEntity, 0)
@@ -91,9 +96,14 @@ func (impl *ProductDomainImpl) CreateProduct(ctx context.Context, productName st
 		return nil, err
 	}
 
-	return entity.ConvertToProductAggInfo(spuBO, skuBOList), nil
+	productAggInfo := entity.ConvertToProductAggInfo(spuBO, skuBOList)
+	redis.GetECommerceRedis().SetNX(consts.REDIS_PRODUCT+spuBO.SpuId, entity.ProductAggInfoToJsonMarshal(productAggInfo), consts.REDIS_DEFAULT_TIME)
+	return productAggInfo, nil
 }
 func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, productName string, categoryId string, skus []entity.SkuEntity, status string, icon string) (*entity.ProductAggInfo, error) {
+	// delete redis
+	redis.GetECommerceRedis().Del(consts.REDIS_PRODUCT + spuId)
+
 	// check category
 	_, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
 	if err != nil {
@@ -153,9 +163,14 @@ func (impl *ProductDomainImpl) UpdateProduct(ctx context.Context, spuId string, 
 	if err != nil {
 		return nil, err
 	}
-	return entity.ConvertToProductAggInfo(spuBO, skuBOList), nil
+
+	productAggInfo := entity.ConvertToProductAggInfo(spuBO, skuBOList)
+	redis.GetECommerceRedis().SetNX(consts.REDIS_PRODUCT+spuBO.SpuId, entity.ProductAggInfoToJsonMarshal(productAggInfo), consts.REDIS_DEFAULT_TIME)
+	return productAggInfo, nil
 }
 func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) error {
+	// delete redis
+	redis.GetECommerceRedis().Del(consts.REDIS_PRODUCT + spuId)
 
 	// delete spu
 	err := impl.SpuRepo.DeleteSpu(ctx, spuId)
@@ -169,20 +184,21 @@ func (impl *ProductDomainImpl) DeleteProduct(ctx context.Context, spuId string) 
 		return err
 	}
 
-	// delete inv
-
 	return nil
 }
 func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (*entity.ProductAggInfo, error) {
+	redisValue := redis.GetECommerceRedis().Get(consts.REDIS_PRODUCT + spuId).Val()
+	if redisValue != "" {
+		log.Infof("QueryProduct redisValue:%s", redisValue)
+		return entity.ConvertStringToProductAggInfo(redisValue)
+	}
 
 	spuBO, err := impl.SpuRepo.GetSpu(ctx, spuId)
-	fmt.Println("spuBO:", spuBO)
 	if err != nil {
 		return nil, err
 	}
 
 	skuBOs, err := impl.SkuRepo.GetSkuListBySpuId(ctx, spuId)
-	fmt.Println("skuBOs:", skuBOs)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +210,7 @@ func (impl *ProductDomainImpl) QueryProduct(ctx context.Context, spuId string) (
 		Status:      spuBO.Status,
 		Icon:        spuBO.Icon,
 		Deleted:     spuBO.Deleted,
-		Skus:        skuBOs,
+		Skus:        entity.ConvertSkuAddressToValue(skuBOs),
 	}, nil
 }
 func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]*entity.ProductAggInfo, error) {
@@ -229,7 +245,7 @@ func (impl *ProductDomainImpl) QueryProductList(ctx context.Context) ([]*entity.
 			Status:      v.Status,
 			Icon:        v.Icon,
 			Deleted:     v.Deleted,
-			Skus:        skuMap[v.SpuId],
+			Skus:        entity.ConvertSkuAddressToValue(skuMap[v.SpuId]),
 		})
 	}
 
@@ -248,4 +264,113 @@ func (impl *ProductDomainImpl) skuContract(ctx context.Context, skuBO *entity.Sk
 	}
 
 	return skuBO.FillField(ctx, spuId, skuName, sellAmount, costAmount, isDefault, code), nil
+}
+
+// category
+// createCategory
+func (impl *ProductDomainImpl) CreateCategory(ctx context.Context, categoryName string) (*entity.CategoryEntity, error) {
+	// verify name
+	categorySameName, err := impl.CategoryRepo.GetCategoryByName(ctx, "", categoryName)
+	if err != nil {
+		return nil, err
+	}
+	if categorySameName.CategoryId != "" {
+		return nil, errors.ErrorEnum(errors.CATEGORY_NAME_EXIST)
+	}
+
+	categoryBO := &entity.CategoryEntity{}
+	categoryBO = categoryBO.FillField(ctx, categoryName)
+
+	err = impl.CategoryRepo.CreateCategory(ctx, categoryBO)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("categoryBO", categoryBO)
+	redis.GetECommerceRedis().SetNX(consts.REDIS_CATEGOEY+categoryBO.CategoryId, entity.CategoryInfoToJsonMarshal(categoryBO), consts.REDIS_DEFAULT_TIME)
+	return categoryBO, nil
+}
+
+func (impl *ProductDomainImpl) UpdateCategory(ctx context.Context, categoryId, categoryName string) (*entity.CategoryEntity, error) {
+	redis.GetECommerceRedis().Del(consts.REDIS_CATEGOEY + categoryId)
+
+	// get category
+	categoryBO, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	// verify name
+	categorySameName, err := impl.CategoryRepo.GetCategoryByName(ctx, categoryId, categoryName)
+	if err != nil {
+		return nil, err
+	}
+	if categorySameName.CategoryId != "" {
+		return nil, errors.ErrorEnum(errors.CATEGORY_NAME_EXIST)
+	}
+
+	categoryBO = categoryBO.FillField(ctx, categoryName)
+
+	err = impl.CategoryRepo.UpdateCategory(ctx, categoryBO)
+	if err != nil {
+		return nil, err
+	}
+
+	redis.GetECommerceRedis().SetNX(consts.REDIS_CATEGOEY+categoryBO.CategoryId, entity.CategoryInfoToJsonMarshal(categoryBO), consts.REDIS_DEFAULT_TIME)
+	return categoryBO, nil
+}
+
+func (impl *ProductDomainImpl) DeleteCategory(ctx context.Context, categoryId string) error {
+	redis.GetECommerceRedis().Del(consts.REDIS_CATEGOEY + categoryId)
+
+	// get category
+	categoryBO, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
+	if err != nil {
+		return err
+	}
+	if categoryBO.CategoryId != "" {
+		return errors.ErrorEnum(errors.CATEGORY_NAME_EXIST)
+	}
+
+	// verify product
+	spuBOList, err := impl.SpuRepo.GetSpuListByCategoryId(ctx, categoryId)
+	if err != nil {
+		return err
+	}
+
+	if len(spuBOList) > 0 {
+		return errors.ErrorEnum(errors.CATEGORY_EXIST_PRODUCT)
+	}
+
+	err = impl.CategoryRepo.DeleteCategory(ctx, categoryId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (impl *ProductDomainImpl) QueryCategory(ctx context.Context, categoryId string) (*entity.CategoryEntity, error) {
+	redisValue := redis.GetECommerceRedis().Get(consts.REDIS_CATEGOEY + categoryId).Val()
+	if redisValue != "" {
+		log.Infof("QueryCategory redisValue:%s", redisValue)
+		return entity.ConvertStringToCategoryInfo(redisValue)
+	}
+
+	// get category
+	categoryBO, err := impl.CategoryRepo.GetCategory(ctx, categoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	return categoryBO, nil
+}
+
+func (impl *ProductDomainImpl) QueryCategoryList(ctx context.Context) ([]*entity.CategoryEntity, error) {
+	// get category
+	categoryBOList, err := impl.CategoryRepo.GetCategoryList(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return categoryBOList, nil
 }

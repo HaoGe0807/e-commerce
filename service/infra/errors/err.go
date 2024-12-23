@@ -8,7 +8,7 @@ type Err struct {
 
 func (e Err) Error() string {
 	//TODO implement me
-	panic("implement me")
+	return e.Msg
 }
 
 func ErrorEnum(code int32, msg ...string) error {
@@ -47,6 +47,8 @@ func Error(err *Err, msg string) error {
 func (err Err) GetCode() int32 {
 	return err.Code
 }
+func (err Err) GetMsg() string  { return err.Msg }
+func (err Err) GetData() []byte { return err.Data }
 
 /*
 The `errCode` is structured in three segments: First Segment + Second Segment + Third Segment
@@ -72,6 +74,11 @@ const (
 	SKU_NAME_DUPLICATE           = 100100
 	PRODUCT_ONLY_ONE_DEFAULT_SKU = 100101
 	SKU_CODE_ERROR               = 100102
+
+	// product category
+	CATEGORY_NOT_EXIST     = 100201
+	CATEGORY_NAME_EXIST    = 100202
+	CATEGORY_EXIST_PRODUCT = 100203
 )
 
 var errorMessages = map[ErrorCode]string{
@@ -82,4 +89,8 @@ var errorMessages = map[ErrorCode]string{
 	SKU_NAME_DUPLICATE:           "规格名称重复",
 	PRODUCT_ONLY_ONE_DEFAULT_SKU: "商品只能有一个默认规格",
 	SKU_CODE_ERROR:               "规格条码不符合要求",
+
+	CATEGORY_NOT_EXIST:     "分类不存在",
+	CATEGORY_NAME_EXIST:    "分类名称已存在",
+	CATEGORY_EXIST_PRODUCT: "分类存在关联商品，禁止删除",
 }

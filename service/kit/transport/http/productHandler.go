@@ -4,13 +4,13 @@ import (
 	"context"
 	"e-commerce/service/kit/endpoint"
 	"encoding/json"
+	"fmt"
 	kitEndpoint "github.com/go-kit/kit/endpoint"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"net/http"
 )
 
 func CreateProductServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
-
 	return httptransport.NewServer(
 		endpoint,
 		decodeCreateProductRequest,
@@ -36,7 +36,6 @@ func decodeCreateProductRequest(ctx context.Context, r *http.Request) (request i
 }
 
 func UpdateProductServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
-
 	return httptransport.NewServer(
 		endpoint,
 		decodeUpdateProductRequest,
@@ -62,7 +61,6 @@ func decodeUpdateProductRequest(ctx context.Context, r *http.Request) (request i
 }
 
 func DeleteProductServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
-
 	return httptransport.NewServer(
 		endpoint,
 		decodeDeleteProductRequest,
@@ -88,7 +86,6 @@ func decodeDeleteProductRequest(ctx context.Context, r *http.Request) (request i
 }
 
 func QueryProductServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
-
 	return httptransport.NewServer(
 		endpoint,
 		decodeQueryProductRequest,
@@ -114,7 +111,6 @@ func decodeQueryProductRequest(ctx context.Context, r *http.Request) (request in
 }
 
 func QueryProductListServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
-
 	return httptransport.NewServer(
 		endpoint,
 		decodeQueryProductListRequest,
@@ -140,16 +136,124 @@ func decodeQueryProductListRequest(ctx context.Context, r *http.Request) (reques
 }
 
 func CreateCategoryServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
-
+	fmt.Print("test")
 	return httptransport.NewServer(
 		endpoint,
-		decodeQueryProductListRequest,
+		decodeCreateCategoryRequest,
 		encodeResp,
 		options...,
 	)
 }
-func decodeCreateRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
-	var req endpoint.QueryProductListReq
+func decodeCreateCategoryRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoint.CreateCategoryReq
+
+	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
+		return nil, e
+	}
+	err = FormatParam(ctx, req)
+	if err != nil {
+		//return nil, &errors.Err{
+		//	Code: http.StatusBadRequest,
+		//	Msg:  err.Error(),
+		//	Data: nil,
+		//}
+		return nil, err
+	}
+	return req, nil
+}
+
+func UpdateCategoryServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
+
+	return httptransport.NewServer(
+		endpoint,
+		decodeUpdateCategoryRequest,
+		encodeResp,
+		options...,
+	)
+}
+func decodeUpdateCategoryRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoint.UpdateCategoryReq
+
+	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
+		return nil, e
+	}
+	err = FormatParam(ctx, req)
+	if err != nil {
+		//return nil, &errors.Err{
+		//	Code: http.StatusBadRequest,
+		//	Msg:  err.Error(),
+		//	Data: nil,
+		//}
+		return nil, err
+	}
+	return req, nil
+}
+
+func DeleteCategoryServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
+
+	return httptransport.NewServer(
+		endpoint,
+		decodeDeleteCategoryRequest,
+		encodeResp,
+		options...,
+	)
+}
+func decodeDeleteCategoryRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoint.DeleteCategoryReq
+
+	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
+		return nil, e
+	}
+	err = FormatParam(ctx, req)
+	if err != nil {
+		//return nil, &errors.Err{
+		//	Code: http.StatusBadRequest,
+		//	Msg:  err.Error(),
+		//	Data: nil,
+		//}
+		return nil, err
+	}
+	return req, nil
+}
+
+func QueryCategoryServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
+
+	return httptransport.NewServer(
+		endpoint,
+		decodeQueryCategoryRequest,
+		encodeResp,
+		options...,
+	)
+}
+func decodeQueryCategoryRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoint.QueryCategoryReq
+
+	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
+		return nil, e
+	}
+	err = FormatParam(ctx, req)
+	if err != nil {
+		//return nil, &errors.Err{
+		//	Code: http.StatusBadRequest,
+		//	Msg:  err.Error(),
+		//	Data: nil,
+		//}
+		return nil, err
+	}
+	return req, nil
+}
+
+func QueryCategoryListServer(endpoint kitEndpoint.Endpoint, options ...httptransport.ServerOption) *httptransport.Server {
+
+	return httptransport.NewServer(
+		endpoint,
+		decodeQueryCategoryListRequest,
+		encodeResp,
+		options...,
+	)
+}
+func decodeQueryCategoryListRequest(ctx context.Context, r *http.Request) (request interface{}, err error) {
+	var req endpoint.QueryCategoryListReq
 
 	if e := json.NewDecoder(r.Body).Decode(&req); e != nil {
 		return nil, e

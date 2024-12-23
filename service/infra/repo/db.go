@@ -12,7 +12,7 @@ func Init() {
 	// init db connections
 	initDBConnection(consts.DB_NAME)
 
-	//initRedisConnection()
+	initRedisConnection()
 }
 
 func initDBConnection(name string) {
@@ -20,7 +20,7 @@ func initDBConnection(name string) {
 	// 通用参数
 	addr := "localhost:3306"
 	username := "root"
-	password := ""
+	password := "root"
 	maxOpenConns := 10
 	maxIdleConns := 1
 
@@ -43,18 +43,19 @@ func initRedisConnection() {
 	host := "127.0.0.1"
 	port := "6379"
 	password := ""
-	dbnum := 6
+	dbnum := 0
 
 	log.Infof("Initialize cache, host: %s, port: %s, password: %s, dbnum: %d ", host, port, password, dbnum)
 	redis.NewClient(consts.REDIS_STOCK_LOCK, host, port, password, dbnum)
+	redis.NewClient(consts.REDIS_NAME, host, port, password, dbnum)
 }
 
 // defer close connection
 func Close() {
 	orm.GetORM(consts.DB_NAME).Close()
 
-	//redis.GetClient(consts.REDIS_NAME).Close()
-	//redis.GetClient(consts.REDIS_STOCK_LOCK).Close()
+	redis.GetClient(consts.REDIS_NAME).Close()
+	redis.GetClient(consts.REDIS_STOCK_LOCK).Close()
 }
 
 func IsRecordNotFoundError(err error) bool {

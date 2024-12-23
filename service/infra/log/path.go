@@ -25,6 +25,7 @@ func GetPath() string {
 	}
 
 	API_ROOT = strings.Replace(dir, "\\", "/", -1)
+	fmt.Println("API_ROOT:", API_ROOT)
 	return API_ROOT
 }
 
